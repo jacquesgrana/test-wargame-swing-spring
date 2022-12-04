@@ -4,10 +4,12 @@ import fr.jac.granarolo.wargame.models.Hex;
 import fr.jac.granarolo.wargame.models.Unit;
 import fr.jac.granarolo.wargame.models.enums.CampEnum;
 import fr.jac.granarolo.wargame.models.enums.TerrainTypeEnum;
+import fr.jac.granarolo.wargame.models.enums.UnitTypeEnum;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,7 +67,7 @@ public class GridHexagons extends JPanel {
                     if(hex.getUnits().size() > 0) {
                         textToDisplay += " : nb d'unité(s) : " + hex.getUnits().size() + " : nom(s)";
                         for(Unit unit : hex.getUnits()) {
-                            textToDisplay += " : " + unit.getName();
+                            textToDisplay += " : " + unit.getName() + " (type : " + unit.getType().toString() + ")";
                         }
                         //hex.getUnits().stream().forEach(u -> {textToDisplay += " : " + u.getName();});
                     }
@@ -214,7 +216,7 @@ public class GridHexagons extends JPanel {
                 g2d.draw(hexagon);
 
                 if(hexes[x + startX][y + startY].getUnits().size() > 0) {
-                    imageUnit = getUnitImage(Color.BLUE, hexes[x + startX][y + startY].getUnits());
+                    imageUnit = getUnitImage(Color.BLUE, getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()), hexes[x + startX][y + startY].getUnits());
                     g2d.translate(-1*(Math.round(side/7)),0);
                     g2d.drawImage(imageUnit,(int)(hexagon.getBounds().x + side*0.5), (int) (hexagon.getBounds().y + side * 0.5), this);
                     g2d.translate(Math.round(side/7),0);
@@ -244,58 +246,6 @@ public class GridHexagons extends JPanel {
             g2d.draw(selectedPolygon);
             g2d.setStroke(bs1);
         }
-
-        /*
-        number = -1;
-        for (int y = 0; y < rangeY; y += 2) {
-            for (int x = 0; x < rangeX; x++) {
-                getHexagon(x * dimension.width, (int) (y * side * 1.5));
-                if (mousePosition != null && hexagon.contains(mousePosition)) {
-                    focusedHexagonLocation.x = x * dimension.width;
-                    focusedHexagonLocation.y = (int) (y * side * 1.5);
-                    number = y * rangeX + x + startX + MAX_X*startY;
-                    //number = row + column * rows + startX + MAX_X*startY;
-                }
-
-                //g2d.setColor(getRandomColor());
-
-               // int nb = y * rangeX + x + startX + MAX_X*startY; // *******************************************
-                //int nb = row + column * rows + startX + MAX_X*startY;
-                g2d.setColor(colors[x + startX][y + startY]);
-                //System.out.println("Number : " + (row * columns + column));
-                g2d.fillPolygon(hexagon);
-                g2d.setColor(Color.black);
-                g2d.draw(hexagon);
-                //g2d.drawImage(image1,(int)(hexagon.getBounds().x + side*0.5), (int) (hexagon.getBounds().y + side * 0.5), this);
-            }
-        }
-        for (int y = 1; y < rangeY; y += 2) {
-            for (int x = 0; x < rangeX; x++) {
-                getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
-                if (mousePosition != null && hexagon.contains(mousePosition)) {
-                    focusedHexagonLocation.x = x * dimension.width + dimension.width / 2;
-                    focusedHexagonLocation.y =(int) (y * side * 1.5 + 0.5);
-                    number = y * rangeX + x + startX + MAX_X*startY;
-                    //number = row + column * rows + startX + MAX_X*startY;
-                }
-
-                //g2d.setColor(getRandomColor());
-                // int nb = row * columns + column + startX + MAX_X*startY;
-                g2d.setColor(colors[x + startX][y + startY]);
-                //System.out.println("Number : " + (row * columns + column));
-                g2d.fillPolygon(hexagon);
-                g2d.setColor(Color.black);
-                g2d.draw(hexagon);
-                //g2d.drawImage(image2,(int)(hexagon.getBounds().x + side*0.5), (int) (hexagon.getBounds().y + side * 0.5), this);
-            }
-        }
-        if (number != -1) {
-            g2d.setColor(Color.red);
-            g2d.setStroke(bs3);
-            Polygon focusedHexagon = getHexagon(focusedHexagonLocation.x, focusedHexagonLocation.y);
-            g2d.draw(focusedHexagon);
-        }
-        */
     }
 
     public Polygon getHexagon(final int x, final int y) {
@@ -311,37 +261,39 @@ public class GridHexagons extends JPanel {
         return hexagon;
     }
 
-    private Image getUnitImage(final Color color1, Set<Unit> units) {
+    private Image getUnitImage(final Color color1, final Color bgColor, Set<Unit> units) {
         BufferedImage img = new BufferedImage(side, side, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = (Graphics2D) img.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 
-        g2d.setColor(color1);
-        //g2d.setPaint(color1);
-        g2d.fillRoundRect(0, 0, side, side, 10, 10); //Math.round(side/7)
-        /*
-        g2d.setColor(getBackground());
+        g2d.setPaint(bgColor);
         g2d.fillRect(0, 0, side, side);
-        g2d.setColor(color1);
-        g2d.fillOval(0, 0, side - 9, side - 3);
-        g2d.drawOval(0, 0, side - 9, side - 3);
-        g2d.setColor(Color.WHITE);
-        g2d.fillOval(4, 9, 5, 7);
-        g2d.setColor(color1);
-        g2d.drawOval(4, 9, 5, 7);
-        g2d.fillOval(6, 12, 3, 3);
-        g2d.setColor(Color.WHITE);
-        g2d.fillOval(14, 9, 5, 7);
-        g2d.setColor(color1);
-        g2d.drawOval(14, 9, 5, 7);
-        g2d.fillOval(16, 12, 3, 3);
-        g2d.setColor(Color.RED);
-        g2d.fillOval(8, 20, 6, 3);
-        g2d.setColor(color1);
-        g2d.drawOval(8, 20, 6, 3);
-        */
+        //g2d.setColor(color1);
+        g2d.setPaint(color1);
 
+        g2d.fillRoundRect(0, 0, side, side, Math.round(side/3), Math.round(side/3)); //Math.round(side/7)
+
+        g2d.setPaint(Color.YELLOW);
+        g2d.fillRect(Math.round(side/4), Math.round(side/4), Math.round(side/2), Math.round(side/4));
+        g2d.setPaint(Color.RED);
+        g2d.drawRect(Math.round(side/4), Math.round(side/4), Math.round(side/2), Math.round(side/4));
+
+        //ArrayList<Unit> unitList = new ArrayList<>(units); // unitList.get(0).getType() == UnitTypeEnum.ART
+        if(units.stream().filter(u -> u.getType() == UnitTypeEnum.ART).count() > 0) {
+            g2d.setPaint(Color.RED);
+            g2d.fillOval(side*2/5, side*3/10, side/6, side/6);
+        }
+        else if(units.stream().filter(u -> u.getType() == UnitTypeEnum.LEG_INF).count() > 0) {
+            g2d.setPaint(Color.RED);
+            g2d.drawLine(side/4, side/4, side*3/4, side/2);
+            g2d.drawLine(side/4, side/2, side*3/4, side/4);
+        }
+        else if(units.stream().filter(u -> u.getType() == UnitTypeEnum.TANK).count() > 0) {
+            g2d.setPaint(Color.RED);
+            g2d.drawArc(side/2, side*4/15, 5, 5, -90, 180);
+            g2d.drawArc(9, 8, 5, 5, 90, 180);
+        }
         return img;
     }
 
