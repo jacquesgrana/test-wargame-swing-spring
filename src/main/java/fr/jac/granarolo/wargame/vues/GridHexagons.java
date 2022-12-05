@@ -2,14 +2,13 @@ package fr.jac.granarolo.wargame.vues;
 
 import fr.jac.granarolo.wargame.models.Hex;
 import fr.jac.granarolo.wargame.models.Unit;
-import fr.jac.granarolo.wargame.models.enums.CampEnum;
 import fr.jac.granarolo.wargame.models.enums.TerrainTypeEnum;
 import fr.jac.granarolo.wargame.models.enums.UnitTypeEnum;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,10 +30,20 @@ public class GridHexagons extends JPanel {
     private Hex hex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
     private Hex selectedHex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-    ;
+
+    private Hex start = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
+    private Hex end = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
+
 
     private boolean isSelectedHexExists = false;
+    private boolean isRightClick = false;
 
+    private boolean isFrangeExists = false;
+
+    private Hex[] neighbors = new Hex[6];
+
+    private Set<Hex> frangeHexes = new HashSet<Hex>();
+    private Set<Hex> treatedHexes = new HashSet<Hex>();
     public int MAX_X = 220, MAX_Y = 220;
     //private Color[][] colors = new Color[MAX_X][MAX_Y];
 
@@ -74,6 +83,17 @@ public class GridHexagons extends JPanel {
                     window.displayInfos(textToDisplay);
                     selectedHex = hex.clone();
                     isSelectedHexExists = true;
+                }
+                else if (number != -1 && SwingUtilities.isRightMouseButton(e)) {
+
+                    isRightClick = !isRightClick;
+
+                    if (isRightClick) {
+                        neighbors = calculateNeighbors(hex);
+                    }
+                    else {
+                        neighbors = new Hex[6];
+                    }
                 }
             }
         };
@@ -124,6 +144,51 @@ public class GridHexagons extends JPanel {
         //image1 = getTestImage(Color.ORANGE);
         //image2 = getTestImage(Color.LIGHT_GRAY);
     }
+
+    private Hex[] calculateNeighbors(Hex hex) {
+        neighbors = new Hex[6];
+        int x = hex.getPosX();
+        int y = hex.getPosY();
+        if(x%2 == 0) {
+            if(y%2 == 0) {
+                neighbors[0] = hexes[x+1][y];
+                neighbors[1] = hexes[x][y-1];
+                neighbors[2] = hexes[x-1][y-1];
+                neighbors[3] = hexes[x-1][y];
+                neighbors[4] = hexes[x-1][y+1];
+                neighbors[5] = hexes[x][y+1];
+            } else {
+                neighbors[0] = hexes[x+1][y];
+                neighbors[1] = hexes[x+1][y-1];
+                neighbors[2] = hexes[x][y-1];
+                neighbors[3] = hexes[x-1][y];
+                neighbors[4] = hexes[x][y+1];
+                neighbors[5] = hexes[x+1][y+1];
+            }
+
+        }
+        else {
+
+            if(y%2 == 0) {
+                neighbors[0] = hexes[x+1][y];
+                neighbors[1] = hexes[x][y-1];
+                neighbors[2] = hexes[x-1][y-1];
+                neighbors[3] = hexes[x-1][y];
+                neighbors[4] = hexes[x-1][y+1];
+                neighbors[5] = hexes[x][y+1];
+            }
+            else {
+                neighbors[0] = hexes[x+1][y];
+                neighbors[1] = hexes[x+1][y-1];
+                neighbors[2] = hexes[x][y-1];
+                neighbors[3] = hexes[x-1][y];
+                neighbors[4] = hexes[x][y+1];
+                neighbors[5] = hexes[x+1][y+1];
+            }
+        }
+        return  neighbors;
+    }
+
     public void modifyStartValues(int deltaX, int deltaY) {
         startX = startX + deltaX;
         startY = startY + deltaY;
@@ -169,17 +234,13 @@ public class GridHexagons extends JPanel {
         number = -1;
         for (int x = 0; x < rangeX; x++) {
             for (int y = 0; y < rangeY; y++) {
-
                 if (y % 2 == 0) {
-
-
                     getHexagon(x * dimension.width, (int) (y * side * 1.5));
                     if (mousePosition != null && hexagon.contains(mousePosition)) {
                         number = y * rangeX + x + startX + MAX_X * startY;
                         posX = x + startX;
                         posY = y + startY;
                         //System.out.println("posX : " + posX + " : posY : " + posY);
-
                         focusedHexagonLocation.x = x * dimension.width;
                         focusedHexagonLocation.y = (int) (y * side * 1.5);
                         hex.setPosX(posX);
@@ -189,8 +250,8 @@ public class GridHexagons extends JPanel {
                             hex.setUnits(hexes[posX][posY].getUnits());
                         }
                     }
-                } else {
-
+                }
+                else {
                     getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
                     if (mousePosition != null && hexagon.contains(mousePosition)) {
                         number = y * rangeX + x + startX + MAX_X * startY;
@@ -208,11 +269,10 @@ public class GridHexagons extends JPanel {
                     }
                 }
 
-
                 g2d.setColor(getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()));
                 g2d.fillPolygon(hexagon);
                 g2d.setStroke(bs1);
-                g2d.setColor(Color.black);
+                g2d.setColor(Color.gray);
                 g2d.draw(hexagon);
 
                 if(hexes[x + startX][y + startY].getUnits().size() > 0) {
@@ -230,22 +290,42 @@ public class GridHexagons extends JPanel {
             g2d.draw(focusedHexagon);
         }
 
-        if(isSelectedHexExists) {
-            g2d.setColor(Color.blue);
-            g2d.setStroke(bs3);
-            Polygon selectedPolygon;
+        // TODO ajouter si isRightClicked --> dessin de la liste des voisins de hex
 
-            int x = selectedHex.getPosX() - startX;
-            int y = selectedHex.getPosY() - startY;
-            if (selectedHex.getPosY() % 2 == 0) {
-                selectedPolygon = getHexagon(x * dimension.width, (int) (y * side * 1.5));
+        if(isRightClick) {
+            for (Hex h : neighbors) {
+                drawHex(g2d, Color.RED, h);
             }
-            else {
-                selectedPolygon = getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
-            }
-            g2d.draw(selectedPolygon);
-            g2d.setStroke(bs1);
         }
+
+        if(isSelectedHexExists) {
+            drawHex(g2d, Color.BLUE, selectedHex);
+        }
+
+        if(isFrangeExists) {
+            treatedHexes.stream().forEach(h -> drawHex(g2d, Color.YELLOW, h));
+            frangeHexes.stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
+            drawHex(g2d, Color.RED, start);
+        }
+
+
+    }
+
+    private void drawHex(Graphics2D g2d, Color strokeColor, Hex h) {
+        g2d.setColor(strokeColor);
+        g2d.setStroke(bs3);
+        Polygon selectedPolygon;
+
+        int x = h.getPosX() - startX;
+        int y = h.getPosY() - startY;
+        if (h.getPosY() % 2 == 0) {
+            selectedPolygon = getHexagon(x * dimension.width, (int) (y * side * 1.5));
+        }
+        else {
+            selectedPolygon = getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
+        }
+        g2d.draw(selectedPolygon);
+        g2d.setStroke(bs1);
     }
 
     public Polygon getHexagon(final int x, final int y) {
@@ -334,5 +414,38 @@ public class GridHexagons extends JPanel {
                 break;
         }
         return toReturn;
+    }
+
+    // si frange pas créée (booleen) et isSelectedHex
+
+    // alors init de la frange : ajout de selected hex dans treatedHexes , booleen a false
+    // sinon ajout de la frange dans treatedHexes
+    // ajout dans la frange des nouveaux hex voisins s'ils ne sont pas dans treatedHexes
+    public void generateFrange() {
+        //System.out.println("appel generate");
+        if(isSelectedHexExists) {
+            if(isFrangeExists) {
+                //System.out.println("la frange existe");
+                treatedHexes.addAll(frangeHexes);
+
+            }
+            else {
+                start = selectedHex;
+                isFrangeExists = true;
+                //System.out.println("la frange n'existe pas");
+                treatedHexes.add(selectedHex);
+                frangeHexes.add(selectedHex);
+            }
+            Set<Hex> tempFrange = new HashSet<Hex>();
+            frangeHexes.stream().forEach(h -> {
+                Hex[] neighbors = calculateNeighbors(h);
+                Arrays.stream(neighbors).filter(n -> !treatedHexes.contains(n)).forEach(n -> {
+                    tempFrange.add(n);
+                    // TODO ajouter if terrain ok pour ajouter ou pas
+                });
+            });
+            frangeHexes = tempFrange;
+        }
+
     }
 }

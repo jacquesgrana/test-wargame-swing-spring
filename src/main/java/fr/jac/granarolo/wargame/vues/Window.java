@@ -32,7 +32,7 @@ public class Window extends JFrame {
     UnitService unitService = (UnitService)context.getBean("unitService");
 
     HexService hexService = (HexService)context.getBean("hexService");
-    private JButton button = new JButton("Bouton");
+    private JButton button = new JButton("Générer frange");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
     private JLabel labelInfos = new JLabel("Infos : ");
@@ -57,7 +57,8 @@ public class Window extends JFrame {
         board.setBackground(Color.WHITE);
         panelBoard.add(board);
         container.add(panelBoard);
-        container.add(labelInfos);
+        container.add(button, BorderLayout.SOUTH);
+        container.add(labelInfos, BorderLayout.SOUTH);
 
         button.addActionListener(new ActionListener() {
             @Override
@@ -67,7 +68,7 @@ public class Window extends JFrame {
             }
         });
 
-        container.add(button, BorderLayout.SOUTH);
+
         initDatas(false);
     }
 
@@ -75,6 +76,7 @@ public class Window extends JFrame {
         System.out.println("Clic bouton");
         //board.generateRandomColorList();
 
+        /*
         // TODO charger les listes depuis la bdd --> TEST a enlever
         Set<Hex> setToAdd = new HashSet<Hex>();
         setToAdd = hexService.findAll();
@@ -83,11 +85,11 @@ public class Window extends JFrame {
         board.units = new HashSet<Unit>();
         board.units = unitService.findAll();
         getContentPane().repaint();
-        //board.addKeyListener(board.keyHandler);
         board.setFocusable(true);
         board.requestFocus();
-        //board.addMouseMotionListener(board.mouseHandler);
-        //board.addMouseListener(board.mouseHandler);
+        */
+        board.generateFrange();
+
 
     }
 
