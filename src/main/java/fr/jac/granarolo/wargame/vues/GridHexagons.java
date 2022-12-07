@@ -1,6 +1,7 @@
 package fr.jac.granarolo.wargame.vues;
 
 import fr.jac.granarolo.wargame.models.Hex;
+import fr.jac.granarolo.wargame.models.HexFrange;
 import fr.jac.granarolo.wargame.models.Unit;
 import fr.jac.granarolo.wargame.models.enums.TerrainTypeEnum;
 import fr.jac.granarolo.wargame.models.enums.UnitTypeEnum;
@@ -8,9 +9,7 @@ import fr.jac.granarolo.wargame.models.enums.UnitTypeEnum;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -42,8 +41,10 @@ public class GridHexagons extends JPanel {
 
     private Hex[] neighbors = new Hex[6];
 
-    private Set<Hex> frangeHexes = new HashSet<Hex>();
-    private Set<Hex> treatedHexes = new HashSet<Hex>();
+    private Set<HexFrange> frangeHexes = new HashSet<HexFrange>();
+    private Set<HexFrange> treatedHexes = new HashSet<HexFrange>();
+
+    //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
     public int MAX_X = 220, MAX_Y = 220;
     //private Color[][] colors = new Color[MAX_X][MAX_Y];
 
@@ -307,8 +308,6 @@ public class GridHexagons extends JPanel {
             frangeHexes.stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
             drawHex(g2d, Color.RED, start);
         }
-
-
     }
 
     private void drawHex(Graphics2D g2d, Color strokeColor, Hex h) {
@@ -433,19 +432,60 @@ public class GridHexagons extends JPanel {
                 start = selectedHex;
                 isFrangeExists = true;
                 //System.out.println("la frange n'existe pas");
-                treatedHexes.add(selectedHex);
-                frangeHexes.add(selectedHex);
+                Set<Hex> initPath = new HashSet<>();
+                initPath.add(selectedHex);
+                HexFrange initHex = new HexFrange(selectedHex, initPath);
+                treatedHexes.add(initHex); // *********************************************************************************************
+                frangeHexes.add(initHex); // *********************************************************************************************
             }
-            Set<Hex> tempFrange = new HashSet<Hex>();
+            Set<HexFrange> tempFrange = new HashSet<HexFrange>(); // *********************************************************************************************
             frangeHexes.stream().forEach(h -> {
                 Hex[] neighbors = calculateNeighbors(h);
-                Arrays.stream(neighbors).filter(n -> !treatedHexes.contains(n)).forEach(n -> {
-                    tempFrange.add(n);
+                //Arrays.stream(neighbors).filter(n -> !treatedHexes.contains(n)).forEach(n -> { // TODO probleme de comparaison d'objets de types differents (Hex et HexFrange) --> faire methode : isSetContainsHex
+                Arrays.stream(neighbors).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
+                    //isTerrainPassable(n) ? tempFrange.add(n) : treatedHexes.add(n);
                     // TODO ajouter if terrain ok pour ajouter ou pas
+                    Set<Hex> pathFrange = new HashSet<>();
+                    pathFrange.add(n);
+                    HexFrange hexFrange = new HexFrange(n, pathFrange);
+                    if (isTerrainPassable(n)) {
+                        tempFrange.add(hexFrange); // *********************************************************************************************
+                    }
+                    else {
+                        treatedHexes.add(hexFrange); // *********************************************************************************************
+                    }
                 });
             });
             frangeHexes = tempFrange;
+/*
+            // boucle pour ajouter les chemins, utiliser une map <hex, chemin> ?
+            frangeHexes.stream().forEach(h -> {
+                Hex[] neighbors = calculateNeighbors(h);
+                Arrays.stream(neighbors).filter(n -> treatedHexes.contains(n)).forEach(n -> {
+
+                });
+            });*/
         }
 
+    }
+
+    private boolean isTerrainPassable(Hex h) {
+        /*
+        boolean toReturn = true;
+        if (h.getTerrainType() == TerrainTypeEnum.WATER) {
+            toReturn = false;
+        }
+        else {
+            toReturn = true;
+        }
+        */
+        return h.getTerrainType() != TerrainTypeEnum.WATER;
+        //return toReturn;
+    }
+
+    private boolean isSetContainsHex(Set<HexFrange> set, Hex hex) {
+        //boolean toReturn = false;
+        return set.stream().anyMatch(hf -> hf.getPosX() == hex.getPosX() && hf.getPosY() == hex.getPosY());
+        //return toReturn;
     }
 }
