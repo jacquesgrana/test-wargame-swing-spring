@@ -26,6 +26,8 @@ public class GridHexagons extends JPanel {
     private Point mousePosition;
     private int posX = -1, posY = -1, number, gapX, gapY, startX = 100, startY = 100;
 
+    private int pathId = 0;
+
     private Hex hex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
     private Hex selectedHex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
@@ -36,13 +38,16 @@ public class GridHexagons extends JPanel {
 
     private boolean isSelectedHexExists = false;
     private boolean isRightClick = false;
-
     private boolean isFrangeExists = false;
+
+    private boolean isPathShow = false;
 
     private Hex[] neighbors = new Hex[6];
 
     private Set<HexFrange> frangeHexes = new HashSet<HexFrange>();
     private Set<HexFrange> treatedHexes = new HashSet<HexFrange>();
+
+    private Set<Hex> pathToShow = new HashSet<>();
 
     //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
     public int MAX_X = 220, MAX_Y = 220;
@@ -289,6 +294,7 @@ public class GridHexagons extends JPanel {
             g2d.setStroke(bs3);
             Polygon focusedHexagon = getHexagon(focusedHexagonLocation.x, focusedHexagonLocation.y);
             g2d.draw(focusedHexagon);
+            repaint();
         }
 
         // TODO ajouter si isRightClicked --> dessin de la liste des voisins de hex
@@ -296,18 +302,28 @@ public class GridHexagons extends JPanel {
         if(isRightClick) {
             for (Hex h : neighbors) {
                 drawHex(g2d, Color.RED, h);
+                //repaint();
             }
         }
 
         if(isSelectedHexExists) {
             drawHex(g2d, Color.BLUE, selectedHex);
+            //repaint();
         }
 
         if(isFrangeExists) {
             treatedHexes.stream().forEach(h -> drawHex(g2d, Color.YELLOW, h));
             frangeHexes.stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
             drawHex(g2d, Color.RED, start);
+            //repaint();
         }
+
+        if(isPathShow) {
+            pathToShow.stream().forEach(h -> drawHex(g2d, Color.RED, h));
+            //System.out.println("path to show size : " + pathToShow.size());
+            //repaint();
+        }
+        requestFocus();
     }
 
     private void drawHex(Graphics2D g2d, Color strokeColor, Hex h) {
@@ -317,14 +333,18 @@ public class GridHexagons extends JPanel {
 
         int x = h.getPosX() - startX;
         int y = h.getPosY() - startY;
-        if (h.getPosY() % 2 == 0) {
-            selectedPolygon = getHexagon(x * dimension.width, (int) (y * side * 1.5));
+        if(x>=0 && y>=0 && x<rangeX && y<rangeY) {
+            if (h.getPosY() % 2 == 0) {
+                selectedPolygon = getHexagon(x * dimension.width, (int) (y * side * 1.5));
+            }
+            else {
+                selectedPolygon = getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
+            }
+            g2d.draw(selectedPolygon);
+            g2d.setStroke(bs1);
+            repaint();
         }
-        else {
-            selectedPolygon = getHexagon(x * dimension.width + dimension.width / 2, (int) (y * side * 1.5 + 0.5));
-        }
-        g2d.draw(selectedPolygon);
-        g2d.setStroke(bs1);
+
     }
 
     public Polygon getHexagon(final int x, final int y) {
@@ -422,6 +442,7 @@ public class GridHexagons extends JPanel {
     // ajout dans la frange des nouveaux hex voisins s'ils ne sont pas dans treatedHexes
     public void generateFrange() {
         //System.out.println("appel generate");
+        isPathShow = false;
         if(isSelectedHexExists) {
             if(isFrangeExists) {
                 //System.out.println("la frange existe");
@@ -443,9 +464,8 @@ public class GridHexagons extends JPanel {
                 Hex[] neighbors = calculateNeighbors(h);
                 //Arrays.stream(neighbors).filter(n -> !treatedHexes.contains(n)).forEach(n -> { // TODO probleme de comparaison d'objets de types differents (Hex et HexFrange) --> faire methode : isSetContainsHex
                 Arrays.stream(neighbors).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
-                    //isTerrainPassable(n) ? tempFrange.add(n) : treatedHexes.add(n);
-                    // TODO ajouter if terrain ok pour ajouter ou pas
-                    Set<Hex> pathFrange = new HashSet<>();
+                    Set<Hex> pathFrange = new HashSet<>(h.getPath());
+                    //pathFrange = h.getPath();
                     pathFrange.add(n);
                     HexFrange hexFrange = new HexFrange(n, pathFrange);
                     if (isTerrainPassable(n)) {
@@ -487,5 +507,23 @@ public class GridHexagons extends JPanel {
         //boolean toReturn = false;
         return set.stream().anyMatch(hf -> hf.getPosX() == hex.getPosX() && hf.getPosY() == hex.getPosY());
         //return toReturn;
+    }
+
+    public void displayPaths() {
+        isPathShow = true;
+        pathId++;
+        if(pathId >= frangeHexes.size()) {
+            pathId = 1;
+        }
+        if(isFrangeExists) {
+            int cpt = 0;
+            //frangeHexes
+            for (HexFrange fh : frangeHexes) {
+                cpt++;
+                if (cpt == pathId) {
+                    pathToShow = fh.getPath();
+                }
+            }
+        }
     }
 }

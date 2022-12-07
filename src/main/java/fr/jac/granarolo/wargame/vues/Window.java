@@ -32,7 +32,8 @@ public class Window extends JFrame {
     UnitService unitService = (UnitService)context.getBean("unitService");
 
     HexService hexService = (HexService)context.getBean("hexService");
-    private JButton button = new JButton("Générer frange");
+    private JButton button1 = new JButton("Générer frange");
+    private JButton button2 = new JButton("Afficher chemin");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
     private JLabel labelInfos = new JLabel("Infos : ");
@@ -50,21 +51,30 @@ public class Window extends JFrame {
         this.setLocationRelativeTo(null);
 
         container = getContentPane();
-        layout = new BoxLayout(container, BoxLayout.PAGE_AXIS);
+        layout = new BoxLayout(container, BoxLayout.Y_AXIS);
         container.setLayout(layout);
         panelBoard.setLayout(new CardLayout(100,100));
         board.setBorder(BorderFactory.createLineBorder(Color.black));
         board.setBackground(Color.WHITE);
         panelBoard.add(board);
         container.add(panelBoard);
-        container.add(button, BorderLayout.SOUTH);
+        container.add(button1, BorderLayout.SOUTH);
+        container.add(button2, BorderLayout.SOUTH);
         container.add(labelInfos, BorderLayout.SOUTH);
 
-        button.addActionListener(new ActionListener() {
+        button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
                 //layout.next(container);
-                clicButtonOne();
+                clicButton1();
+            }
+        });
+
+        button2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                //layout.next(container);
+                clicButton2();
             }
         });
 
@@ -72,7 +82,7 @@ public class Window extends JFrame {
         initDatas(false);
     }
 
-    private void clicButtonOne() {
+    private void clicButton1() {
         System.out.println("Clic bouton");
         //board.generateRandomColorList();
 
@@ -89,8 +99,10 @@ public class Window extends JFrame {
         board.requestFocus();
         */
         board.generateFrange();
+    }
 
-
+    private void clicButton2() {
+        board.displayPaths();
     }
 
     public void displayInfos(String text) {
