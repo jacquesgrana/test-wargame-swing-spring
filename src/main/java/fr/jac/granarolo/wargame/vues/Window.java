@@ -36,6 +36,8 @@ public class Window extends JFrame {
     private JButton button2 = new JButton("Afficher chemin");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
+
+    private JPanel panelButtons = new JPanel();
     private JLabel labelInfos = new JLabel("Infos : ");
 
     private GridHexagons board = new GridHexagons(15, 15, 30, this);
@@ -45,7 +47,7 @@ public class Window extends JFrame {
 
     public Window() {
         this.setTitle("Fenêtre");
-        this.setSize(1000, 1000);
+        this.setSize(1005, 1025);
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -55,11 +57,12 @@ public class Window extends JFrame {
         container.setLayout(layout);
         panelBoard.setLayout(new CardLayout(100,100));
         board.setBorder(BorderFactory.createLineBorder(Color.black));
-        board.setBackground(Color.WHITE);
+        board.setBackground(Color.DARK_GRAY);
         panelBoard.add(board);
         container.add(panelBoard);
-        container.add(button1, BorderLayout.SOUTH);
-        container.add(button2, BorderLayout.SOUTH);
+        panelButtons.add(button1);
+        panelButtons.add(button2);
+        container.add(panelButtons, BorderLayout.SOUTH);
         container.add(labelInfos, BorderLayout.SOUTH);
 
         button1.addActionListener(new ActionListener() {
