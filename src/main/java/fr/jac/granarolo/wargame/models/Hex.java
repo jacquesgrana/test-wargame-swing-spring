@@ -1,5 +1,6 @@
 package fr.jac.granarolo.wargame.models;
 
+import fr.jac.granarolo.wargame.models.classes.HexFrange;
 import fr.jac.granarolo.wargame.models.enums.TerrainTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -38,6 +39,14 @@ public class Hex {
     @OneToMany(mappedBy="hex", fetch=FetchType.EAGER)
     @Column(nullable=true)
     private Set<Unit> units = new HashSet<Unit>();
+
+    public Hex(HexFrange hexF) {
+        this.id = hexF.getId();
+        this.posX = hexF.getPosX();
+        this.posY = hexF.getPosY();
+        this.terrainType = hexF.getTerrainType();
+        this.units = hexF.getUnits();
+    }
 
     public Hex clone() {
         return new Hex(this.id, this.posX, this.posY, this.terrainType, this.units);

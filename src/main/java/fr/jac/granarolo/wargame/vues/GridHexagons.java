@@ -435,6 +435,26 @@ public class GridHexagons extends JPanel {
         return toReturn;
     }
 
+    private float getTerrainWeight(TerrainTypeEnum terrainType) {
+        float toReturn = 1F;
+        switch (terrainType) {
+            case WATER -> {
+                toReturn = 999F;
+            }
+            case GRASS -> {
+                toReturn = 1F;
+            }
+            case SAND -> {
+                toReturn = 1.5F;
+            }
+            case HILL -> {
+                toReturn = 3F;
+            }
+        }
+
+        return toReturn;
+    }
+
     // si frange pas créée (booleen) et isSelectedHex
 
     // alors init de la frange : ajout de selected hex dans treatedHexes , booleen a false
@@ -456,24 +476,50 @@ public class GridHexagons extends JPanel {
                 Set<Hex> initPath = new HashSet<>();
                 initPath.add(selectedHex);
                 HexFrange initHex = new HexFrange(selectedHex, initPath);
-                treatedHexes.add(initHex); // *********************************************************************************************
-                frangeHexes.add(initHex); // *********************************************************************************************
+                treatedHexes.add(initHex);
+                frangeHexes.add(initHex);
             }
-            Set<HexFrange> tempFrange = new HashSet<HexFrange>(); // *********************************************************************************************
+            Set<HexFrange> tempFrange = new HashSet<HexFrange>();
             frangeHexes.stream().forEach(h -> {
                 Hex[] neighbors = calculateNeighbors(h);
-                //Arrays.stream(neighbors).filter(n -> !treatedHexes.contains(n)).forEach(n -> { // TODO probleme de comparaison d'objets de types differents (Hex et HexFrange) --> faire methode : isSetContainsHex
                 Arrays.stream(neighbors).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
                     Set<Hex> pathFrange = new HashSet<>(h.getPath());
                     //pathFrange = h.getPath();
                     pathFrange.add(n);
                     HexFrange hexFrange = new HexFrange(n, pathFrange);
-                    if (isTerrainPassable(n)) {
-                        tempFrange.add(hexFrange); // *********************************************************************************************
+                    //if(tempFrange.contains(hexFrange)) { // TODO faire fonction qui compare les positions x et y : isHexFrangeIsInSet(hexFrange, tempFrange)
+                    if(isSetContainsHexFrange(tempFrange, hexFrange)) {
+                        // récupérer chemin de hex deja dans le set
+                        HexFrange oldHexF = tempFrange.stream().filter(hex -> hex.getPosX() == hexFrange.getPosX() && hex.getPosY() == hexFrange.getPosY()).findFirst().orElse(null);
+
+                        Set<Hex> oldPath = oldHexF.getPath();
+                        float oldWeight = calculatePathWeight(oldPath, selectedHex);
+                        System.out.println("old hex weight : " + oldWeight);
+                        // comparer les chemin par appel méthode calculatePathWeight(Set<Hex> path, )
+                        float newWeight = calculatePathWeight(hexFrange.getPath(), selectedHex);
+                        System.out.println("new hex weight : " + newWeight);
+                        if(newWeight < oldWeight) {
+                            tempFrange.remove(oldHexF);
+                            tempFrange.add(hexFrange);
+                        }
+                        // affecter le chemin si besoin
+
+                        /*
+                        HexFran
+                        if(calcWeightPath(hexFrange) > ) {
+
+                        }*/
                     }
                     else {
-                        treatedHexes.add(hexFrange); // *********************************************************************************************
+                        if (isTerrainPassable(n)) {
+                            tempFrange.add(hexFrange); // *********************************************************************************************
+                        }
+                        else {
+                            treatedHexes.add(hexFrange); // *********************************************************************************************
+                        }
                     }
+
+
                 });
             });
             frangeHexes = tempFrange;
@@ -487,6 +533,17 @@ public class GridHexagons extends JPanel {
             });*/
         }
 
+    }
+
+    private float calculatePathWeight(Set<Hex> path, Hex startHex) {
+        float toReturn = path.stream().map(h -> getTerrainWeight(h.getTerrainType())).reduce(0F, (s,w) ->s + w);
+        toReturn -= getTerrainWeight(startHex.getTerrainType());
+        return toReturn;
+    }
+
+    private boolean isSetContainsHexFrange(Set<HexFrange> set, HexFrange hexFrange) {
+        return set.stream().anyMatch(hf -> hf.getPosX() == hexFrange.getPosX() && hf.getPosY() == hexFrange.getPosY());
+        //return false;
     }
 
     private boolean isTerrainPassable(Hex h) {
@@ -512,7 +569,7 @@ public class GridHexagons extends JPanel {
     public void displayPaths() {
         isPathShow = true;
         pathId++;
-        if(pathId >= frangeHexes.size()) {
+        if(pathId > frangeHexes.size()) {
             pathId = 1;
         }
         if(isFrangeExists) {
