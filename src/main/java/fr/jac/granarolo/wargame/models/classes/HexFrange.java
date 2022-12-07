@@ -1,5 +1,6 @@
-package fr.jac.granarolo.wargame.models;
+package fr.jac.granarolo.wargame.models.classes;
 
+import fr.jac.granarolo.wargame.models.Hex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

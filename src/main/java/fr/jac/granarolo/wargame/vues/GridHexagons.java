@@ -1,7 +1,7 @@
 package fr.jac.granarolo.wargame.vues;
 
 import fr.jac.granarolo.wargame.models.Hex;
-import fr.jac.granarolo.wargame.models.HexFrange;
+import fr.jac.granarolo.wargame.models.classes.HexFrange;
 import fr.jac.granarolo.wargame.models.Unit;
 import fr.jac.granarolo.wargame.models.enums.TerrainTypeEnum;
 import fr.jac.granarolo.wargame.models.enums.UnitTypeEnum;
