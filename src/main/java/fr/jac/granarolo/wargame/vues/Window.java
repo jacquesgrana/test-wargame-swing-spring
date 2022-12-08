@@ -36,6 +36,8 @@ public class Window extends JFrame {
     private JButton button2 = new JButton("Afficher chemin");
 
     public JButton button3 = new JButton("Choisir le départ");
+
+    public JButton button4 = new JButton("Afficher les chemins");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
 
@@ -70,6 +72,8 @@ public class Window extends JFrame {
         panelButtons.add(button2);
         button3.setEnabled(false);
         panelButtons.add(button3);
+        button4.setEnabled(false);
+        panelButtons.add(button4);
         container.add(panelButtons, BorderLayout.SOUTH);
         container.add(labelInfos, BorderLayout.SOUTH);
 
@@ -97,6 +101,13 @@ public class Window extends JFrame {
             }
         });
 
+        button4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                //layout.next(container);
+                clicButton4();
+            }
+        });
 
         initDatas(false);
     }
@@ -129,7 +140,7 @@ public class Window extends JFrame {
             //if(board.isSelectedHexPassable()) {
                 if(findPathLevel == 0) {
                     // TODO appel fonction resetPathFindingDatas();
-                    board.resetPathFindingDatas();
+                    board.resetPathFindingDatas(this);
                     System.out.println("clic choix départ : appel methode de board : setStartHex()");
                     board.setStartHex();
                     setButton3Text("Choisir l'arrivée");
@@ -141,17 +152,22 @@ public class Window extends JFrame {
                 }
                 else if(findPathLevel == 2) {
                     System.out.println("clic choix calculer chemin : appel methode de board : displayPath()");
-                    board.searchAndDisplayPath();
+                    board.searchAndDisplayPath(this);
                     setButton3Text("Choisir le départ");
                 }
             //}
         }
         else {
             disableButton3();
+            disableButton4();
         }
         findPathLevel++;
         findPathLevel = findPathLevel > 2 ? 0 : findPathLevel;
         //board.clicFindPathButton();
+    }
+
+    public void clicButton4() {
+        board.displayFoundPaths();
     }
 
     public void displayInfos(String text) {
@@ -309,6 +325,14 @@ public class Window extends JFrame {
 
     public void disableButton3() {
         this.button3.setEnabled(false);
+    }
+
+    public void enableButton4() {
+        this.button4.setEnabled(true);
+    }
+
+    public void disableButton4() {
+        this.button4.setEnabled(false);
     }
 
     public void setButton3Text(String textToDisplay) {

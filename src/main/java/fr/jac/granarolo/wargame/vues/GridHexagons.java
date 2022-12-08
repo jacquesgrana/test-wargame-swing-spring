@@ -27,7 +27,7 @@ public class GridHexagons extends JPanel {
     private Point mousePosition;
     private int posX = -1, posY = -1, number, gapX, gapY, startX = 60, startY = 60;
 
-    private int pathId = 0, findPathLevel = 0;
+    private int pathId = 0, pathFoundId = 0, findPathLevel = 0;
 
     private Hex hex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
@@ -45,6 +45,8 @@ public class GridHexagons extends JPanel {
     private boolean isStartPFChoose = false;
     private boolean isEndPFChoose = false;
     private boolean isPathShow = false;
+
+    private boolean isPathFoundShow = false;
     private boolean isPathFound = false;
 
     private Hex[] neighbors = new Hex[6];
@@ -53,6 +55,7 @@ public class GridHexagons extends JPanel {
     private Set<HexFrange> treatedHexes = new HashSet<HexFrange>();
 
     private Set<Hex> pathToShow = new HashSet<>();
+    private Set<Hex> pathFoundToShow = new HashSet<>();
 
     private Set<Set<Hex>> foundPaths = new HashSet<>();
 
@@ -101,6 +104,7 @@ public class GridHexagons extends JPanel {
                     }
                     else {
                         window.disableButton3();
+                        window.disableButton4();
                     }
 
                 }
@@ -345,9 +349,12 @@ public class GridHexagons extends JPanel {
         }
 
         if(isPathFound) {
+            /*
             foundPaths.stream()
                     .sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null)
                     .stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
+            */
+            pathFoundToShow.stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
             //foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
         }
 
@@ -597,6 +604,24 @@ public class GridHexagons extends JPanel {
         }
     }
 
+    public void displayFoundPaths() {
+        isPathFoundShow = true;
+        pathFoundId++;
+        if(pathFoundId > foundPaths.size()) {
+            pathFoundId = 1;
+        }
+        int cpt = 1;
+            //frangeHexes
+        for (Set<Hex> path : foundPaths) {
+
+                if (cpt == pathFoundId) {
+                    pathFoundToShow = path;
+                }
+                cpt++;
+            }
+
+    }
+
     public void setStartHex() {
         startPF = selectedHex.clone();
         isStartPFChoose = true;
@@ -609,19 +634,24 @@ public class GridHexagons extends JPanel {
         System.out.println("End Path Finding : " + endPF.toString());
     }
 
-    public void searchAndDisplayPath() {
+    public void searchAndDisplayPath(Window win) {
         System.out.println("Appel méthode générateur de chemin");
         PathFinder pf = new PathFinder();
         foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
         isPathFound = foundPaths != null;
+        if(isPathFound) {
+            win.enableButton4();
+        }
     }
 
-    public void resetPathFindingDatas() {
+    public void resetPathFindingDatas(Window win) {
         startPF = null;
         endPF = null;
         isPathFound = false;
         isStartPFChoose = false;
         isEndPFChoose = false;
+        isPathFoundShow = false;
+        win.disableButton4();
     }
 
     public boolean isSelectedHexPassable() {

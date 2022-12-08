@@ -68,7 +68,7 @@ public class PathFinder {
                             setToReturn.add(pathToAdd);
                             //isJobFinished = true;
                             System.out.println("chemin trouvé");
-/*
+
                             int pathNb = setToReturn.size();
                             Hex[] endNeighbors = calculateNeighbors(end, hexes, MAX_X, MAX_Y);
                             long notPassableHexNb = Arrays.stream(endNeighbors).filter(nE -> nE != null).filter(nE -> !isTerrainPassable(nE)).count();
@@ -78,7 +78,7 @@ public class PathFinder {
                             if(pathNb + notPassableHexNb + nullHexNb == 6) {
                                 System.out.println("travail fini");
                                 isJobFinished = true;
-                            }*/
+                            }
                         }
                         else {
                             //System.out.println("hexFrange : " + hexFrange.toString());
