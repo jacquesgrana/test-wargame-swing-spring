@@ -321,7 +321,10 @@ public class GridHexagons extends JPanel {
         }
 
         if(isPathFound) {
-            foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
+            foundPaths.stream()
+                    .sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null)
+                    .stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
+            //foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
         }
 
         if(isStartPFChoose) {
