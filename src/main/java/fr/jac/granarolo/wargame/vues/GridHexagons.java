@@ -26,19 +26,24 @@ public class GridHexagons extends JPanel {
     private Point mousePosition;
     private int posX = -1, posY = -1, number, gapX, gapY, startX = 100, startY = 100;
 
-    private int pathId = 0;
+    private int pathId = 0, findPathLevel = 0;
 
     private Hex hex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
     private Hex selectedHex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
     private Hex start = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-    private Hex end = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
+
+    private Hex startPF = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
+    private Hex endPF = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
 
 
     private boolean isSelectedHexExists = false;
     private boolean isRightClick = false;
     private boolean isFrangeExists = false;
+
+    private boolean isStartPFChoose = false;
+    private boolean isEndPFChoose = false;
 
     private boolean isPathShow = false;
 
@@ -89,6 +94,13 @@ public class GridHexagons extends JPanel {
                     window.displayInfos(textToDisplay);
                     selectedHex = hex.clone();
                     isSelectedHexExists = true;
+                    if(isTerrainPassable(selectedHex)) {
+                        window.enableButton3();
+                    }
+                    else {
+                        window.disableButton3();
+                    }
+
                 }
                 else if (number != -1 && SwingUtilities.isRightMouseButton(e)) {
 
@@ -323,6 +335,14 @@ public class GridHexagons extends JPanel {
             //System.out.println("path to show size : " + pathToShow.size());
             //repaint();
         }
+
+        if(isStartPFChoose) {
+            drawHex(g2d, new Color(220,100,0), startPF);
+        }
+
+        if(isEndPFChoose) {
+            drawHex(g2d, new Color(100,0,220), endPF);
+        }
         requestFocus();
     }
 
@@ -484,38 +504,29 @@ public class GridHexagons extends JPanel {
                 Hex[] neighbors = calculateNeighbors(h);
                 Arrays.stream(neighbors).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
                     Set<Hex> pathFrange = new HashSet<>(h.getPath());
-                    //pathFrange = h.getPath();
                     pathFrange.add(n);
                     HexFrange hexFrange = new HexFrange(n, pathFrange);
-                    //if(tempFrange.contains(hexFrange)) { // TODO faire fonction qui compare les positions x et y : isHexFrangeIsInSet(hexFrange, tempFrange)
                     if(isSetContainsHexFrange(tempFrange, hexFrange)) {
                         // récupérer chemin de hex deja dans le set
                         HexFrange oldHexF = tempFrange.stream().filter(hex -> hex.getPosX() == hexFrange.getPosX() && hex.getPosY() == hexFrange.getPosY()).findFirst().orElse(null);
 
                         Set<Hex> oldPath = oldHexF.getPath();
-                        float oldWeight = calculatePathWeight(oldPath, selectedHex);
-                        System.out.println("old hex weight : " + oldWeight);
+                        float oldPathWeight = calculatePathWeight(oldPath, selectedHex);
+                        //System.out.println("old hex weight : " + oldWeight);
                         // comparer les chemin par appel méthode calculatePathWeight(Set<Hex> path, )
-                        float newWeight = calculatePathWeight(hexFrange.getPath(), selectedHex);
-                        System.out.println("new hex weight : " + newWeight);
-                        if(newWeight < oldWeight) {
+                        float newPathWeight = calculatePathWeight(hexFrange.getPath(), selectedHex);
+                        //System.out.println("new hex weight : " + newWeight);
+                        if(newPathWeight < oldPathWeight) {
                             tempFrange.remove(oldHexF);
                             tempFrange.add(hexFrange);
                         }
-                        // affecter le chemin si besoin
-
-                        /*
-                        HexFran
-                        if(calcWeightPath(hexFrange) > ) {
-
-                        }*/
                     }
                     else {
                         if (isTerrainPassable(n)) {
-                            tempFrange.add(hexFrange); // *********************************************************************************************
+                            tempFrange.add(hexFrange);
                         }
                         else {
-                            treatedHexes.add(hexFrange); // *********************************************************************************************
+                            treatedHexes.add(hexFrange);
                         }
                     }
 
@@ -547,23 +558,11 @@ public class GridHexagons extends JPanel {
     }
 
     private boolean isTerrainPassable(Hex h) {
-        /*
-        boolean toReturn = true;
-        if (h.getTerrainType() == TerrainTypeEnum.WATER) {
-            toReturn = false;
-        }
-        else {
-            toReturn = true;
-        }
-        */
         return h.getTerrainType() != TerrainTypeEnum.WATER;
-        //return toReturn;
     }
 
     private boolean isSetContainsHex(Set<HexFrange> set, Hex hex) {
-        //boolean toReturn = false;
         return set.stream().anyMatch(hf -> hf.getPosX() == hex.getPosX() && hf.getPosY() == hex.getPosY());
-        //return toReturn;
     }
 
     public void displayPaths() {
@@ -581,6 +580,38 @@ public class GridHexagons extends JPanel {
                     pathToShow = fh.getPath();
                 }
             }
+        }
+    }
+
+    public void setStartHex() {
+        startPF = selectedHex.clone();
+        isStartPFChoose = true;
+        System.out.println("Start Path Finding : " + startPF.toString());
+    }
+
+    public void setEndHex() {
+        endPF = selectedHex.clone();
+        isEndPFChoose = true;
+        System.out.println("End Path Finding : " + endPF.toString());
+    }
+
+    public void searchAndDisplayPath() {
+        System.out.println("Appel méthode générateur de chemin");
+    }
+
+    public void resetPathFindingDatas() {
+        startPF = null;
+        endPF = null;
+        isStartPFChoose = false;
+        isEndPFChoose = false;
+    }
+
+    public boolean isSelectedHexPassable() {
+        if (isSelectedHexExists) {
+            return isTerrainPassable(selectedHex);
+        }
+        else {
+            return false;
         }
     }
 }

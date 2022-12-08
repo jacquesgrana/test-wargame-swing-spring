@@ -1,6 +1,6 @@
 package fr.jac.granarolo.wargame.models.enums;
 
 public enum TerrainTypeEnum {
-    WATER, GRASS, HILL, SAND
+    WATER, GRASS, HILL, SAND;
 
 }

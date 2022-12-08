@@ -34,11 +34,17 @@ public class Window extends JFrame {
     HexService hexService = (HexService)context.getBean("hexService");
     private JButton button1 = new JButton("Générer frange");
     private JButton button2 = new JButton("Afficher chemin");
+
+    public JButton button3 = new JButton("Choisir le départ");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
 
     private JPanel panelButtons = new JPanel();
     private JLabel labelInfos = new JLabel("Infos : ");
+
+    private boolean isSelectedHexExists = true;
+
+    private int findPathLevel = 0;
 
     private GridHexagons board = new GridHexagons(15, 15, 30, this);
     //private JTextField text = new JTextField("Texte");
@@ -62,6 +68,8 @@ public class Window extends JFrame {
         container.add(panelBoard);
         panelButtons.add(button1);
         panelButtons.add(button2);
+        button3.setEnabled(false);
+        panelButtons.add(button3);
         container.add(panelButtons, BorderLayout.SOUTH);
         container.add(labelInfos, BorderLayout.SOUTH);
 
@@ -78,6 +86,14 @@ public class Window extends JFrame {
             public void actionPerformed(ActionEvent event) {
                 //layout.next(container);
                 clicButton2();
+            }
+        });
+
+        button3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                //layout.next(container);
+                clicButton3();
             }
         });
 
@@ -106,6 +122,36 @@ public class Window extends JFrame {
 
     private void clicButton2() {
         board.displayPaths();
+    }
+
+    public void clicButton3() {
+        if(isSelectedHexExists) {
+            //if(board.isSelectedHexPassable()) {
+                if(findPathLevel == 0) {
+                    // TODO appel fonction resetPathFindingDatas();
+                    board.resetPathFindingDatas();
+                    System.out.println("clic choix départ : appel methode de board : setStartHex()");
+                    board.setStartHex();
+                    setButton3Text("Choisir l'arrivée");
+                }
+                else if(findPathLevel == 1) {
+                    System.out.println("clic choix arrivée : appel methode de board : setEndHex()");
+                    board.setEndHex();
+                    setButton3Text("Calculer chemin");
+                }
+                else if(findPathLevel == 2) {
+                    System.out.println("clic choix calculer chemin : appel methode de board : displayPath()");
+                    board.searchAndDisplayPath();
+                    setButton3Text("Choisir le départ");
+                }
+            //}
+        }
+        else {
+            disableButton3();
+        }
+        findPathLevel++;
+        findPathLevel = findPathLevel > 2 ? 0 : findPathLevel;
+        //board.clicFindPathButton();
     }
 
     public void displayInfos(String text) {
@@ -257,4 +303,15 @@ public class Window extends JFrame {
         }
     }
 
+    public void enableButton3() {
+        this.button3.setEnabled(true);
+    }
+
+    public void disableButton3() {
+        this.button3.setEnabled(false);
+    }
+
+    public void setButton3Text(String textToDisplay) {
+        this.button3.setText(textToDisplay);
+    }
 }

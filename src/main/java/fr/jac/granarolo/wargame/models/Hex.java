@@ -52,4 +52,14 @@ public class Hex {
         return new Hex(this.id, this.posX, this.posY, this.terrainType, this.units);
     }
 
+    @Override
+    public String toString() {
+        return "Hex{" +
+                "id=" + id +
+                ", posX=" + posX +
+                ", posY=" + posY +
+                ", terrainType=" + terrainType +
+                ", units=" + units +
+                '}';
+    }
 }
