@@ -25,7 +25,7 @@ public class GridHexagons extends JPanel {
     private final Dimension dimension;
     private final int rangeY, rangeX, side;
     private Point mousePosition;
-    private int posX = -1, posY = -1, number, gapX, gapY, startX = 100, startY = 100;
+    private int posX = -1, posY = -1, number, gapX, gapY, startX = 60, startY = 60;
 
     private int pathId = 0, findPathLevel = 0;
 
@@ -57,7 +57,7 @@ public class GridHexagons extends JPanel {
     private Set<Set<Hex>> foundPaths = new HashSet<>();
 
     //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
-    public int MAX_X = 220, MAX_Y = 220;
+    public int MAX_X = 120, MAX_Y = 120;
     //private Color[][] colors = new Color[MAX_X][MAX_Y];
 
     public Hex[][] hexes = new Hex[MAX_X][MAX_Y];
@@ -148,6 +148,30 @@ public class GridHexagons extends JPanel {
                     case KeyEvent.VK_RIGHT:
                         modifyStartValues(2, 0);
                         repaint();
+                        break;
+                    case KeyEvent.VK_W:
+                        if(isSelectedHexExists) {
+                            hexes[selectedHex.getPosX()][selectedHex.getPosY()].setTerrainType(TerrainTypeEnum.WATER);
+                            repaint();
+                        }
+                        break;
+                    case KeyEvent.VK_G:
+                        if(isSelectedHexExists) {
+                            hexes[selectedHex.getPosX()][selectedHex.getPosY()].setTerrainType(TerrainTypeEnum.GRASS);
+                            repaint();
+                        }
+                        break;
+                    case KeyEvent.VK_H:
+                        if(isSelectedHexExists) {
+                            hexes[selectedHex.getPosX()][selectedHex.getPosY()].setTerrainType(TerrainTypeEnum.HILL);
+                            repaint();
+                        }
+                        break;
+                    case KeyEvent.VK_S:
+                        if(isSelectedHexExists) {
+                            hexes[selectedHex.getPosX()][selectedHex.getPosY()].setTerrainType(TerrainTypeEnum.SAND);
+                            repaint();
+                        }
                         break;
                 }
             }

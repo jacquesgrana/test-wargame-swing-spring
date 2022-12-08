@@ -72,6 +72,7 @@ public class PathFinder {
                             long notPassableHexNb = Arrays.stream(endNeighbors).filter(nE -> nE != null).filter(nE -> !isTerrainPassable(nE)).count();
                             long nullHexNb = Arrays.stream(endNeighbors).filter(nE -> nE == null).count();
 
+
                             if(pathNb + notPassableHexNb + nullHexNb == 6) {
                                 System.out.println("travail fini");
                                 isJobFinished = true;
@@ -93,6 +94,7 @@ public class PathFinder {
                 });
             });
             frangeHexes = tempFrange;
+            System.out.println("frangeHexes size : " + frangeHexes.size());
             if(tempFrange.size() == 0) {
                 System.out.println("liste vide");
                 isJobFinished = true;
