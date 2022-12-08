@@ -22,4 +22,8 @@ public class HexFrange extends Hex {
     public HexFrange clone() {
         return new HexFrange(new Hex(this.getId(), this.getPosX(), this.getPosY(), this.getTerrainType(), this.getUnits()), this.path);
     }
+
+    public boolean isEqualToHex(Hex hex) {
+        return this.getPosX() == hex.getPosX() && this.getPosY() == hex.getPosY();
+    }
 }

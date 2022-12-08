@@ -1,5 +1,6 @@
 package fr.jac.granarolo.wargame.vues;
 
+import fr.jac.granarolo.wargame.libraries.PathFinder;
 import fr.jac.granarolo.wargame.models.Hex;
 import fr.jac.granarolo.wargame.models.classes.HexFrange;
 import fr.jac.granarolo.wargame.models.Unit;
@@ -41,11 +42,10 @@ public class GridHexagons extends JPanel {
     private boolean isSelectedHexExists = false;
     private boolean isRightClick = false;
     private boolean isFrangeExists = false;
-
     private boolean isStartPFChoose = false;
     private boolean isEndPFChoose = false;
-
     private boolean isPathShow = false;
+    private boolean isPathFound = false;
 
     private Hex[] neighbors = new Hex[6];
 
@@ -53,6 +53,8 @@ public class GridHexagons extends JPanel {
     private Set<HexFrange> treatedHexes = new HashSet<HexFrange>();
 
     private Set<Hex> pathToShow = new HashSet<>();
+
+    private Set<Set<Hex>> foundPaths = new HashSet<>();
 
     //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
     public int MAX_X = 220, MAX_Y = 220;
@@ -167,43 +169,22 @@ public class GridHexagons extends JPanel {
         neighbors = new Hex[6];
         int x = hex.getPosX();
         int y = hex.getPosY();
-        if(x%2 == 0) {
+
             if(y%2 == 0) {
-                neighbors[0] = hexes[x+1][y];
-                neighbors[1] = hexes[x][y-1];
-                neighbors[2] = hexes[x-1][y-1];
-                neighbors[3] = hexes[x-1][y];
-                neighbors[4] = hexes[x-1][y+1];
-                neighbors[5] = hexes[x][y+1];
+                neighbors[0] = x < (MAX_X - 1) ? hexes[x+1][y] : null;
+                neighbors[1] = y > 0 ? hexes[x][y-1] : null;
+                neighbors[2] = x > 0 && y > 0 ? hexes[x-1][y-1] : null;
+                neighbors[3] = x > 0 ? hexes[x-1][y] : null;
+                neighbors[4] = x > 0 && y < (MAX_Y - 1) ? hexes[x-1][y+1] : null;
+                neighbors[5] = y < (MAX_Y - 1) ? hexes[x][y+1] : null;
             } else {
-                neighbors[0] = hexes[x+1][y];
-                neighbors[1] = hexes[x+1][y-1];
-                neighbors[2] = hexes[x][y-1];
-                neighbors[3] = hexes[x-1][y];
-                neighbors[4] = hexes[x][y+1];
-                neighbors[5] = hexes[x+1][y+1];
+                neighbors[0] = x < (MAX_X - 1) ? hexes[x+1][y] : null;
+                neighbors[1] = x < (MAX_X - 1) && y > 0 ? hexes[x+1][y-1] : null;
+                neighbors[2] = y > 0 ? hexes[x][y-1] : null;
+                neighbors[3] = x > 0 ? hexes[x-1][y] : null;
+                neighbors[4] = y < (MAX_Y - 1) ? hexes[x][y+1] : null;
+                neighbors[5] = x < (MAX_X - 1) && y < (MAX_Y - 1) ? hexes[x+1][y+1] : null;
             }
-
-        }
-        else {
-
-            if(y%2 == 0) {
-                neighbors[0] = hexes[x+1][y];
-                neighbors[1] = hexes[x][y-1];
-                neighbors[2] = hexes[x-1][y-1];
-                neighbors[3] = hexes[x-1][y];
-                neighbors[4] = hexes[x-1][y+1];
-                neighbors[5] = hexes[x][y+1];
-            }
-            else {
-                neighbors[0] = hexes[x+1][y];
-                neighbors[1] = hexes[x+1][y-1];
-                neighbors[2] = hexes[x][y-1];
-                neighbors[3] = hexes[x-1][y];
-                neighbors[4] = hexes[x][y+1];
-                neighbors[5] = hexes[x+1][y+1];
-            }
-        }
         return  neighbors;
     }
 
@@ -313,7 +294,10 @@ public class GridHexagons extends JPanel {
 
         if(isRightClick) {
             for (Hex h : neighbors) {
-                drawHex(g2d, Color.RED, h);
+                if(h != null) {
+                    drawHex(g2d, Color.RED, h);
+                }
+
                 //repaint();
             }
         }
@@ -336,6 +320,10 @@ public class GridHexagons extends JPanel {
             //repaint();
         }
 
+        if(isPathFound) {
+            foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
+        }
+
         if(isStartPFChoose) {
             drawHex(g2d, new Color(220,100,0), startPF);
         }
@@ -343,6 +331,8 @@ public class GridHexagons extends JPanel {
         if(isEndPFChoose) {
             drawHex(g2d, new Color(100,0,220), endPF);
         }
+
+
         requestFocus();
     }
 
@@ -471,7 +461,6 @@ public class GridHexagons extends JPanel {
                 toReturn = 3F;
             }
         }
-
         return toReturn;
     }
 
@@ -502,7 +491,7 @@ public class GridHexagons extends JPanel {
             Set<HexFrange> tempFrange = new HashSet<HexFrange>();
             frangeHexes.stream().forEach(h -> {
                 Hex[] neighbors = calculateNeighbors(h);
-                Arrays.stream(neighbors).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
+                Arrays.stream(neighbors).filter(n -> n != null).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
                     Set<Hex> pathFrange = new HashSet<>(h.getPath());
                     pathFrange.add(n);
                     HexFrange hexFrange = new HexFrange(n, pathFrange);
@@ -597,11 +586,15 @@ public class GridHexagons extends JPanel {
 
     public void searchAndDisplayPath() {
         System.out.println("Appel méthode générateur de chemin");
+        PathFinder pf = new PathFinder();
+        foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
+        isPathFound = foundPaths != null;
     }
 
     public void resetPathFindingDatas() {
         startPF = null;
         endPF = null;
+        isPathFound = false;
         isStartPFChoose = false;
         isEndPFChoose = false;
     }

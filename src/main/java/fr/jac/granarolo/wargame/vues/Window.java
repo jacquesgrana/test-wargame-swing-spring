@@ -46,14 +46,14 @@ public class Window extends JFrame {
 
     private int findPathLevel = 0;
 
-    private GridHexagons board = new GridHexagons(15, 15, 30, this);
+    private GridHexagons board = new GridHexagons(14, 14, 30, this);
     //private JTextField text = new JTextField("Texte");
     //private JComboBox select = new JComboBox();
     private BoxLayout layout;
 
     public Window() {
         this.setTitle("Fenêtre");
-        this.setSize(1005, 1025);
+        this.setSize(955, 965);
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
