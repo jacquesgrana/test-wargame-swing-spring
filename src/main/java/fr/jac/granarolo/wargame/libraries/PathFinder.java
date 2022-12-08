@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static javax.swing.JOptionPane.showMessageDialog;
+
 public class PathFinder {
 
     private Set<HexFrange> frangeHexes = new HashSet<HexFrange>();
@@ -66,7 +68,7 @@ public class PathFinder {
                             setToReturn.add(pathToAdd);
                             //isJobFinished = true;
                             System.out.println("chemin trouvé");
-
+/*
                             int pathNb = setToReturn.size();
                             Hex[] endNeighbors = calculateNeighbors(end, hexes, MAX_X, MAX_Y);
                             long notPassableHexNb = Arrays.stream(endNeighbors).filter(nE -> nE != null).filter(nE -> !isTerrainPassable(nE)).count();
@@ -76,7 +78,7 @@ public class PathFinder {
                             if(pathNb + notPassableHexNb + nullHexNb == 6) {
                                 System.out.println("travail fini");
                                 isJobFinished = true;
-                            }
+                            }*/
                         }
                         else {
                             //System.out.println("hexFrange : " + hexFrange.toString());
@@ -94,10 +96,14 @@ public class PathFinder {
                 });
             });
             frangeHexes = tempFrange;
-            System.out.println("frangeHexes size : " + frangeHexes.size());
+            //System.out.println("frangeHexes size : " + frangeHexes.size());
             if(tempFrange.size() == 0) {
                 System.out.println("liste vide");
                 isJobFinished = true;
+                if(setToReturn.size() == 0) {
+                    showMessageDialog(null, "Pas de chemin possible");
+                }
+
             }
         }
         while(!isJobFinished);
