@@ -331,8 +331,6 @@ public class GridHexagons extends JPanel {
         if(isEndPFChoose) {
             drawHex(g2d, new Color(100,0,220), endPF);
         }
-
-
         requestFocus();
     }
 

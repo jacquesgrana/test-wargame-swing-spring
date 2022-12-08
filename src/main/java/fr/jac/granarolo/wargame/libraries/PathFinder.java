@@ -69,7 +69,7 @@ public class PathFinder {
 
                             int pathNb = setToReturn.size();
                             Hex[] endNeighbors = calculateNeighbors(end, hexes, MAX_X, MAX_Y);
-                            long notPassableHexNb = Arrays.stream(endNeighbors).filter(nE -> !isTerrainPassable(nE)).count();
+                            long notPassableHexNb = Arrays.stream(endNeighbors).filter(nE -> nE != null).filter(nE -> !isTerrainPassable(nE)).count();
                             long nullHexNb = Arrays.stream(endNeighbors).filter(nE -> nE == null).count();
 
                             if(pathNb + notPassableHexNb + nullHexNb == 6) {
@@ -186,7 +186,10 @@ public class PathFinder {
     }
 
     private boolean isTerrainPassable(Hex h) {
-        return h.getTerrainType() != TerrainTypeEnum.WATER;
+        if(h != null) {
+            return h.getTerrainType() != TerrainTypeEnum.WATER;
+        }
+        return false;
     }
 
     private boolean isSetContainsHex(Set<HexFrange> set, Hex hex) {
