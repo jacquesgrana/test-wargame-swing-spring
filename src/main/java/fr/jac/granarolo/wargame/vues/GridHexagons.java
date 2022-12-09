@@ -479,7 +479,7 @@ public class GridHexagons extends JPanel {
         float toReturn = 1F;
         switch (terrainType) {
             case WATER -> {
-                toReturn = 999F;
+                toReturn = Float.MAX_VALUE;
             }
             case GRASS -> {
                 toReturn = 1F;
@@ -668,6 +668,8 @@ System.out.println("nombre de chemin retenus : " + foundPaths.size());
         bestPathFoundToShow = new HashSet<>();
         win.disableButton4();
         win.disableButton5();
+        win.disableButtonReset();
+        win.resetDatas();
     }
 
     public boolean isSelectedHexPassable() {

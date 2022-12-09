@@ -41,6 +41,8 @@ public class Window extends JFrame {
     public JButton button4 = new JButton("Afficher les chemins");
 
     public JButton button5 = new JButton("Afficher meilleur chemin");
+
+    public JButton buttonReset = new JButton("Effacer");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
     private JPanel panelButtons = new JPanel();
@@ -83,6 +85,8 @@ public class Window extends JFrame {
         panelButtons.add(button4);
         button5.setEnabled(false);
         panelButtons.add(button5);
+        buttonReset.setEnabled(false);
+        panelButtons.add(buttonReset);
         labelInfos.setBorder(BorderFactory.createLineBorder(Color.black));
         labelPaths1.setBorder(BorderFactory.createLineBorder(Color.black));
         labelPaths2.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -139,6 +143,14 @@ public class Window extends JFrame {
             }
         });
 
+        buttonReset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                //layout.next(container);
+                clicButtonReset();
+            }
+        });
+
         initDatas(false);
     }
 
@@ -177,6 +189,7 @@ public class Window extends JFrame {
                     System.out.println("clic choix départ : appel methode de board : setStartHex()");
                     board.setStartHex();
                     setButton3Text("Choisir l'arrivée");
+                    enableButtonReset();
                 }
                 else if(findPathLevel == 1) {
                     System.out.println("clic choix arrivée : appel methode de board : setEndHex()");
@@ -187,6 +200,7 @@ public class Window extends JFrame {
                     System.out.println("clic choix calculer chemin : appel methode de board : displayPath()");
                     board.searchPaths(this);
                     setButton3Text("Choisir le départ");
+                    disableButton3();
                 }
             //}
         }
@@ -205,6 +219,8 @@ public class Window extends JFrame {
     }
 
     public void clicButton5() { board.displayBestPath(this); }
+
+    public void clicButtonReset() {board.resetPathFindingDatas(this);}
 
     public void displayInfos(String text) {
         labelInfos.setText("Infos : " + text);
@@ -383,7 +399,19 @@ public class Window extends JFrame {
         this.button5.setEnabled(false);
     }
 
+    public void enableButtonReset() {
+        this.buttonReset.setEnabled(true);
+    }
+
+    public void disableButtonReset() {
+        this.buttonReset.setEnabled(false);
+    }
+
     public void setButton3Text(String textToDisplay) {
         this.button3.setText(textToDisplay);
+    }
+    public void resetDatas() {
+        findPathLevel = 0;
+        setButton3Text("Choisir le départ");
     }
 }
