@@ -38,6 +38,8 @@ public class Window extends JFrame {
     public JButton button3 = new JButton("Choisir le départ");
 
     public JButton button4 = new JButton("Afficher les chemins");
+
+    public JButton button5 = new JButton("Afficher meilleur chemin");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
 
@@ -74,6 +76,8 @@ public class Window extends JFrame {
         panelButtons.add(button3);
         button4.setEnabled(false);
         panelButtons.add(button4);
+        button5.setEnabled(false);
+        panelButtons.add(button5);
         container.add(panelButtons, BorderLayout.SOUTH);
         container.add(labelInfos, BorderLayout.SOUTH);
 
@@ -106,6 +110,14 @@ public class Window extends JFrame {
             public void actionPerformed(ActionEvent event) {
                 //layout.next(container);
                 clicButton4();
+            }
+        });
+
+        button5.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                //layout.next(container);
+                clicButton5();
             }
         });
 
@@ -160,6 +172,7 @@ public class Window extends JFrame {
         else {
             disableButton3();
             disableButton4();
+
         }
         findPathLevel++;
         findPathLevel = findPathLevel > 2 ? 0 : findPathLevel;
@@ -168,6 +181,10 @@ public class Window extends JFrame {
 
     public void clicButton4() {
         board.displayFoundPaths();
+    }
+
+    public void clicButton5() {
+        board.displayBestPath();
     }
 
     public void displayInfos(String text) {
@@ -333,6 +350,14 @@ public class Window extends JFrame {
 
     public void disableButton4() {
         this.button4.setEnabled(false);
+    }
+
+    public void enableButton5() {
+        this.button5.setEnabled(true);
+    }
+
+    public void disableButton5() {
+        this.button5.setEnabled(false);
     }
 
     public void setButton3Text(String textToDisplay) {

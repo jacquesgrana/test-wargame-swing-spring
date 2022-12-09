@@ -19,7 +19,11 @@ public class PathFinder {
 
     public PathFinder() {}
     public Set <Set <Hex>> generatePaths(Hex[][] hexes, int MAX_X, int MAX_Y, Hex start, Hex end) {
-
+// TODO modifier en Set<Map<int, Hex>>
+        frangeHexes = new HashSet<HexFrange>();
+        treatedHexes = new HashSet<HexFrange>();
+        isJobFinished = false;
+        isFrangeExists = false;
         Set <Set <Hex>> setToReturn = new HashSet<Set <Hex>>();
         //Hex start = startPF;
         System.out.println("start : " + start.toString());

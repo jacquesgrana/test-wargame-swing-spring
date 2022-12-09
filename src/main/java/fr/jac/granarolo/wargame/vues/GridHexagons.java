@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.*;
@@ -46,7 +47,7 @@ public class GridHexagons extends JPanel {
     private boolean isStartPFChoose = false;
     private boolean isEndPFChoose = false;
     private boolean isPathShow = false;
-
+    private boolean isBestPathShow = false;
     private boolean isPathFoundShow = false;
     private boolean isPathFound = false;
 
@@ -57,7 +58,7 @@ public class GridHexagons extends JPanel {
 
     private Set<Hex> pathToShow = new HashSet<>();
     private Set<Hex> pathFoundToShow = new HashSet<>();
-
+    private Set<Hex> bestPathFoundToShow = new HashSet<>();
     private Set<Set<Hex>> foundPaths = new HashSet<>();
 
     //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
@@ -106,6 +107,7 @@ public class GridHexagons extends JPanel {
                     } else {
                         window.disableButton3();
                         window.disableButton4();
+                        window.disableButton5();
                     }
 
                 } else if (number != -1 && SwingUtilities.isRightMouseButton(e)) {
@@ -355,6 +357,10 @@ public class GridHexagons extends JPanel {
             //foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
         }
 
+        if(isBestPathShow) {
+            bestPathFoundToShow.stream().forEach(h -> drawHex(g2d, new Color(250, 0, 250), h));
+        }
+
         if (isStartPFChoose) {
             drawHex(g2d, new Color(220, 100, 0), startPF);
         }
@@ -597,6 +603,7 @@ public class GridHexagons extends JPanel {
 
     public void displayFoundPaths() {
         isPathFoundShow = true;
+
         pathFoundId++;
         if (pathFoundId > foundPaths.size()) {
             pathFoundId = 1;
@@ -610,6 +617,13 @@ public class GridHexagons extends JPanel {
 
         }
 
+        //pathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null);
+
+    }
+
+    public void displayBestPath() {
+        isBestPathShow = !isBestPathShow;
+        bestPathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null);
     }
 
     public void setStartHex() {
@@ -627,10 +641,22 @@ public class GridHexagons extends JPanel {
     public void searchAndDisplayPath(Window win) {
         System.out.println("Appel méthode générateur de chemin");
         PathFinder pf = new PathFinder();
-        foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF); // .stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).collect(Collectors.toSet())
+        foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
+        Set<Set<Hex>> reverseFoundPaths = new HashSet<>();
+        reverseFoundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, endPF, startPF);
+        if(reverseFoundPaths != null) {
+            System.out.println("size reverse path set : " + reverseFoundPaths.size());
+            foundPaths.addAll(reverseFoundPaths);
+        }
+        else {
+            System.out.println("reverse path set == null");
+        }
+System.out.println("nombre de chemin retenus : " + foundPaths.size());
+        // .stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).collect(Collectors.toSet())
         isPathFound = foundPaths != null;
         if (isPathFound) {
             win.enableButton4();
+            win.enableButton5();
         }
     }
 
@@ -641,7 +667,12 @@ public class GridHexagons extends JPanel {
         isStartPFChoose = false;
         isEndPFChoose = false;
         isPathFoundShow = false;
+        isBestPathShow = false;
+        pathFoundToShow = new HashSet<>();
+        foundPaths = new HashSet<>();
+        bestPathFoundToShow = new HashSet<>();
         win.disableButton4();
+        win.disableButton5();
     }
 
     public boolean isSelectedHexPassable() {
@@ -651,4 +682,6 @@ public class GridHexagons extends JPanel {
             return false;
         }
     }
+
+
 }
