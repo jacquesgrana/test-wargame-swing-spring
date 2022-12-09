@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.*;
+
 //@Configurable
 public class Window extends JFrame {
 
@@ -32,8 +33,8 @@ public class Window extends JFrame {
     UnitService unitService = (UnitService)context.getBean("unitService");
 
     HexService hexService = (HexService)context.getBean("hexService");
-    private JButton button1 = new JButton("Générer frange");
-    private JButton button2 = new JButton("Afficher chemin");
+    //private JButton button1 = new JButton("Générer frange");
+    //private JButton button2 = new JButton("Afficher chemin");
 
     public JButton button3 = new JButton("Choisir le départ");
 
@@ -42,9 +43,13 @@ public class Window extends JFrame {
     public JButton button5 = new JButton("Afficher meilleur chemin");
     private Container container = new Container();
     private JPanel panelBoard = new JPanel();
-
     private JPanel panelButtons = new JPanel();
+
+    private JPanel panelInfos = new JPanel();
     private JLabel labelInfos = new JLabel("Infos : ");
+
+    private JLabel labelPaths1 = new JLabel("Infos chemins : ");
+    private JLabel labelPaths2 = new JLabel("Infos meilleur chemin : ");
 
     private boolean isSelectedHexExists = true;
 
@@ -70,17 +75,28 @@ public class Window extends JFrame {
         board.setBackground(Color.DARK_GRAY);
         panelBoard.add(board);
         container.add(panelBoard);
-        panelButtons.add(button1);
-        panelButtons.add(button2);
+        //panelButtons.add(button1);
+        //panelButtons.add(button2);
         button3.setEnabled(false);
         panelButtons.add(button3);
         button4.setEnabled(false);
         panelButtons.add(button4);
         button5.setEnabled(false);
         panelButtons.add(button5);
-        container.add(panelButtons, BorderLayout.SOUTH);
-        container.add(labelInfos, BorderLayout.SOUTH);
+        labelInfos.setBorder(BorderFactory.createLineBorder(Color.black));
+        labelPaths1.setBorder(BorderFactory.createLineBorder(Color.black));
+        labelPaths2.setBorder(BorderFactory.createLineBorder(Color.black));
+        labelInfos.setMinimumSize(new Dimension(400,60));
+        labelPaths1.setMinimumSize(new Dimension(400,60));
+        labelPaths2.setMinimumSize(new Dimension(400,60));
 
+        panelInfos.add(labelInfos);
+        panelInfos.add(labelPaths1);
+        panelInfos.add(labelPaths2);
+        container.add(panelInfos, BorderLayout.SOUTH);
+        container.add(panelButtons, BorderLayout.SOUTH);
+
+/*
         button1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -96,6 +112,8 @@ public class Window extends JFrame {
                 clicButton2();
             }
         });
+
+ */
 
         button3.addActionListener(new ActionListener() {
             @Override
@@ -124,29 +142,32 @@ public class Window extends JFrame {
         initDatas(false);
     }
 
+    /*
     private void clicButton1() {
         System.out.println("Clic bouton");
         //board.generateRandomColorList();
 
-        /*
-        // TODO charger les listes depuis la bdd --> TEST a enlever
-        Set<Hex> setToAdd = new HashSet<Hex>();
-        setToAdd = hexService.findAll();
-        setToAdd.stream().forEach(h -> {board.hexes[h.getPosX()][h.getPosY()] = h;});
 
-        board.units = new HashSet<Unit>();
-        board.units = unitService.findAll();
-        getContentPane().repaint();
-        board.setFocusable(true);
-        board.requestFocus();
-        */
+        // TODO charger les listes depuis la bdd --> TEST a enlever
+        //Set<Hex> setToAdd = new HashSet<Hex>();
+        //setToAdd = hexService.findAll();
+        //setToAdd.stream().forEach(h -> {board.hexes[h.getPosX()][h.getPosY()] = h;});
+
+        //board.units = new HashSet<Unit>();
+        //board.units = unitService.findAll();
+        //getContentPane().repaint();
+        //board.setFocusable(true);
+       // board.requestFocus();
+
         board.generateFrange();
     }
+*/
 
+    /*
     private void clicButton2() {
         board.displayPaths();
     }
-
+*/
     public void clicButton3() {
         if(isSelectedHexExists) {
             //if(board.isSelectedHexPassable()) {
@@ -164,7 +185,7 @@ public class Window extends JFrame {
                 }
                 else if(findPathLevel == 2) {
                     System.out.println("clic choix calculer chemin : appel methode de board : displayPath()");
-                    board.searchAndDisplayPath(this);
+                    board.searchPaths(this);
                     setButton3Text("Choisir le départ");
                 }
             //}
@@ -180,16 +201,18 @@ public class Window extends JFrame {
     }
 
     public void clicButton4() {
-        board.displayFoundPaths();
+        board.displayFoundPaths(this);
     }
 
-    public void clicButton5() {
-        board.displayBestPath();
-    }
+    public void clicButton5() { board.displayBestPath(this); }
 
     public void displayInfos(String text) {
         labelInfos.setText("Infos : " + text);
     }
+
+    public void displayInfosPaths1(String text) {labelPaths1.setText("Infos chemins : " + text);}
+
+    public void displayInfosPaths2(String text) {labelPaths2.setText("Infos meilleur chemin : " + text);}
 
     @Transactional
     private void initDatas(boolean isSaveToDb) {

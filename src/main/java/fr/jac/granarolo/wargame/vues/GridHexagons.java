@@ -11,8 +11,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -347,7 +345,7 @@ public class GridHexagons extends JPanel {
             //repaint();
         }
 
-        if (isPathFound) {
+        if (isPathFoundShow) {
             /*
             foundPaths.stream()
                     .sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null)
@@ -501,6 +499,8 @@ public class GridHexagons extends JPanel {
     // alors init de la frange : ajout de selected hex dans treatedHexes , booleen a false
     // sinon ajout de la frange dans treatedHexes
     // ajout dans la frange des nouveaux hex voisins s'ils ne sont pas dans treatedHexes
+
+    /*
     public void generateFrange() {
         //System.out.println("appel generate");
         isPathShow = false;
@@ -552,18 +552,9 @@ public class GridHexagons extends JPanel {
                 });
             });
             frangeHexes = tempFrange;
-/*
-            // boucle pour ajouter les chemins, utiliser une map <hex, chemin> ?
-            frangeHexes.stream().forEach(h -> {
-                Hex[] neighbors = calculateNeighbors(h);
-                Arrays.stream(neighbors).filter(n -> treatedHexes.contains(n)).forEach(n -> {
-
-                });
-            });*/
         }
-
     }
-
+*/
     private float calculatePathWeight(Set<Hex> path, Hex startHex) {
         float toReturn = path.stream().map(h -> getTerrainWeight(h.getTerrainType())).reduce(0F, (s, w) -> s + w);
         toReturn -= getTerrainWeight(startHex.getTerrainType());
@@ -583,6 +574,7 @@ public class GridHexagons extends JPanel {
         return set.stream().anyMatch(hf -> hf.getPosX() == hex.getPosX() && hf.getPosY() == hex.getPosY());
     }
 
+    /*
     public void displayPaths() {
         isPathShow = true;
         pathId++;
@@ -598,12 +590,12 @@ public class GridHexagons extends JPanel {
                     pathToShow = fh.getPath();
                 }
             }
+
         }
-    }
+    }*/
 
-    public void displayFoundPaths() {
+    public void displayFoundPaths(Window win) {
         isPathFoundShow = true;
-
         pathFoundId++;
         if (pathFoundId > foundPaths.size()) {
             pathFoundId = 1;
@@ -613,6 +605,7 @@ public class GridHexagons extends JPanel {
             cpt++;
             if (cpt == pathFoundId) {
                 pathFoundToShow = path;
+                win.displayInfosPaths1("poids : " + calculatePathWeight(pathFoundToShow, startPF));
             }
 
         }
@@ -621,9 +614,11 @@ public class GridHexagons extends JPanel {
 
     }
 
-    public void displayBestPath() {
+    public void displayBestPath(Window win) {
         isBestPathShow = !isBestPathShow;
+        isPathFoundShow = !isPathFoundShow;
         bestPathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null);
+        win.displayInfosPaths2("poids : " + calculatePathWeight(bestPathFoundToShow, startPF));
     }
 
     public void setStartHex() {
@@ -638,7 +633,7 @@ public class GridHexagons extends JPanel {
         System.out.println("End Path Finding : " + endPF.toString());
     }
 
-    public void searchAndDisplayPath(Window win) {
+    public void searchPaths(Window win) {
         System.out.println("Appel méthode générateur de chemin");
         PathFinder pf = new PathFinder();
         foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
