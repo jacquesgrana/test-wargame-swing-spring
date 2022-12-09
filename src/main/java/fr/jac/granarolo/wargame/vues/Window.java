@@ -64,7 +64,7 @@ public class Window extends JFrame {
 
     public Window() {
         this.setTitle("Fenêtre");
-        this.setSize(955, 965);
+        this.setSize(955, 975);
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -184,13 +184,14 @@ public class Window extends JFrame {
         if(isSelectedHexExists) {
             //if(board.isSelectedHexPassable()) {
                 if(findPathLevel == 0) {
-                    // TODO appel fonction resetPathFindingDatas();
+                    // enlever appel?
                     board.resetPathFindingDatas(this);
                     System.out.println("clic choix départ : appel methode de board : setStartHex()");
                     board.setStartHex();
                     setButton3Text("Choisir l'arrivée");
                     enableButtonReset();
                 }
+                // TODO verifier que end != start
                 else if(findPathLevel == 1) {
                     System.out.println("clic choix arrivée : appel methode de board : setEndHex()");
                     board.setEndHex();
@@ -207,7 +208,6 @@ public class Window extends JFrame {
         else {
             disableButton3();
             disableButton4();
-
         }
         findPathLevel++;
         findPathLevel = findPathLevel > 2 ? 0 : findPathLevel;

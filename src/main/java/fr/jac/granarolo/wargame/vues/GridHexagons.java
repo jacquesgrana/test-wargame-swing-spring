@@ -351,7 +351,7 @@ public class GridHexagons extends JPanel {
                     .sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null)
                     .stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
             */
-            pathFoundToShow.stream().forEach(h -> drawHex(g2d, Color.RED, h));
+            pathFoundToShow.stream().forEach(h -> drawHex(g2d, new Color(100, 0, 250), h));
             //foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
         }
 
@@ -360,11 +360,11 @@ public class GridHexagons extends JPanel {
         }
 
         if (isStartPFChoose) {
-            drawHex(g2d, new Color(220, 100, 0), startPF);
+            drawHex(g2d, new Color(100, 0, 50), startPF);
         }
 
         if (isEndPFChoose) {
-            drawHex(g2d, new Color(100, 0, 220), endPF);
+            drawHex(g2d, new Color(100, 50, 50), endPF);
         }
         requestFocus();
     }
@@ -595,7 +595,9 @@ public class GridHexagons extends JPanel {
     }*/
 
     public void displayFoundPaths(Window win) {
+
         isPathFoundShow = true;
+        isBestPathShow = false;
         pathFoundId++;
         if (pathFoundId > foundPaths.size()) {
             pathFoundId = 1;
@@ -634,6 +636,7 @@ public class GridHexagons extends JPanel {
     }
 
     public void searchPaths(Window win) {
+        win.disableButton3();
         System.out.println("Appel méthode générateur de chemin");
         PathFinder pf = new PathFinder();
         foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
@@ -646,10 +649,11 @@ public class GridHexagons extends JPanel {
         else {
             System.out.println("reverse path set == null");
         }
-System.out.println("nombre de chemin retenus : " + foundPaths.size());
+
         // .stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).collect(Collectors.toSet())
         isPathFound = foundPaths != null;
         if (isPathFound) {
+            System.out.println("nombre de chemin retenus : " + foundPaths.size());
             win.enableButton4();
             win.enableButton5();
         }
@@ -669,6 +673,7 @@ System.out.println("nombre de chemin retenus : " + foundPaths.size());
         win.disableButton4();
         win.disableButton5();
         win.disableButtonReset();
+        win.enableButton3();
         win.resetDatas();
     }
 
