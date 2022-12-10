@@ -208,6 +208,7 @@ public class Window extends JFrame {
         else {
             disableButton3();
             disableButton4();
+            disableButton5();
         }
         findPathLevel++;
         findPathLevel = findPathLevel > 2 ? 0 : findPathLevel;
