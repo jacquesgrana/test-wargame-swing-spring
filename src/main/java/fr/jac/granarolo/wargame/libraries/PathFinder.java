@@ -104,9 +104,9 @@ public class PathFinder {
             if(tempFrange.size() == 0) {
                 System.out.println("liste vide");
                 isJobFinished = true;
-                /*
+/*
                 if(setToReturn.size() == 0) {
-                    showMessageDialog(null, "Pas de chemin possible");
+                    showMessageDialog(null, "Pas de chemin(s) possible(s)");
                 }
 */
             }

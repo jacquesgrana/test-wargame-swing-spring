@@ -15,6 +15,9 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import static javax.swing.JOptionPane.showMessageDialog;
+
+
 public class GridHexagons extends JPanel {
 
     private Window window;
@@ -656,6 +659,11 @@ public class GridHexagons extends JPanel {
             System.out.println("nombre de chemin retenus : " + foundPaths.size());
             win.enableButton4();
             win.enableButton5();
+        }
+        else {
+            //showMessageDialog(null, "Pas de chemin(s) possible(s)");
+
+            showMessageDialog(this, "Pas de chemin(s) possible(s)", "Pas de Résultat", JOptionPane.WARNING_MESSAGE);
         }
     }
 
