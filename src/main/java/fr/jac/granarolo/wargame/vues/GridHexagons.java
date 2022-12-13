@@ -1,5 +1,6 @@
 package fr.jac.granarolo.wargame.vues;
 
+import fr.jac.granarolo.wargame.libraries.HexLibrary;
 import fr.jac.granarolo.wargame.libraries.PathFinder;
 import fr.jac.granarolo.wargame.models.Hex;
 import fr.jac.granarolo.wargame.models.classes.HexFrange;
@@ -31,17 +32,11 @@ public class GridHexagons extends JPanel {
     private int posX = -1, posY = -1, number, gapX, gapY, startX = 60, startY = 60;
 
     private int pathId = 0, pathFoundId = 0, findPathLevel = 0;
-
     private Hex hex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-
     private Hex selectedHex = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-
     private Hex start = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-
     private Hex startPF = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
     private Hex endPF = new Hex(0L, 0, 0, TerrainTypeEnum.GRASS, null);
-
-
     private boolean isSelectedHexExists = false;
     private boolean isRightClick = false;
     private boolean isFrangeExists = false;
@@ -51,30 +46,19 @@ public class GridHexagons extends JPanel {
     private boolean isBestPathShow = false;
     private boolean isPathFoundShow = false;
     private boolean isPathFound = false;
-
     private Hex[] neighbors = new Hex[6];
-
     private Set<HexFrange> frangeHexes = new HashSet<HexFrange>();
     private Set<HexFrange> treatedHexes = new HashSet<HexFrange>();
-
     private Set<Hex> pathToShow = new HashSet<>();
     private Set<Hex> pathFoundToShow = new HashSet<>();
     private Set<Hex> bestPathFoundToShow = new HashSet<>();
     private Set<Set<Hex>> foundPaths = new HashSet<>();
-
-    //private Map<Hex, ArrayList<Hex>> mapFrangeHexes = new HashMap<>();
     public int MAX_X = 120, MAX_Y = 120;
-    //private Color[][] colors = new Color[MAX_X][MAX_Y];
-
     public Hex[][] hexes = new Hex[MAX_X][MAX_Y];
-
     public Set<Unit> units = new HashSet<Unit>();
-
     private Image imageUnit;
-
     public MouseInputAdapter mouseHandler;
     public KeyAdapter keyHandler;
-
     public GridHexagons(final int rangeY, final int rangeX, final int side, Window window) {
         this.rangeY = rangeY;
         this.rangeX = rangeX;
@@ -98,12 +82,11 @@ public class GridHexagons extends JPanel {
                         for (Unit unit : hex.getUnits()) {
                             textToDisplay += " : " + unit.getName() + " (type : " + unit.getType().toString() + ")";
                         }
-                        //hex.getUnits().stream().forEach(u -> {textToDisplay += " : " + u.getName();});
                     }
                     window.displayInfos(textToDisplay);
                     selectedHex = hex.clone();
                     isSelectedHexExists = true;
-                    if (isTerrainPassable(selectedHex)) {
+                    if (HexLibrary.isTerrainPassable(selectedHex)) {
                         window.enableButton3();
                     } else {
                         window.disableButton3();
@@ -116,7 +99,7 @@ public class GridHexagons extends JPanel {
                     isRightClick = !isRightClick;
 
                     if (isRightClick) {
-                        neighbors = calculateNeighbors(hex);
+                        neighbors = HexLibrary.calculateNeighbors(hex, hexes, MAX_X, MAX_Y);
                     } else {
                         neighbors = new Hex[6];
                     }
@@ -125,8 +108,6 @@ public class GridHexagons extends JPanel {
         };
         addMouseMotionListener(mouseHandler);
         addMouseListener(mouseHandler);
-
-
         keyHandler = new KeyAdapter() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -135,8 +116,6 @@ public class GridHexagons extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                //super.keyPressed(e);
-                //System.out.println("appui touche");
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
                     case KeyEvent.VK_UP:
@@ -191,31 +170,6 @@ public class GridHexagons extends JPanel {
         addKeyListener(keyHandler);
         setFocusable(true);
         requestFocus();
-        //image1 = getTestImage(Color.ORANGE);
-        //image2 = getTestImage(Color.LIGHT_GRAY);
-    }
-
-    private Hex[] calculateNeighbors(Hex hex) {
-        neighbors = new Hex[6];
-        int x = hex.getPosX();
-        int y = hex.getPosY();
-
-        if (y % 2 == 0) {
-            neighbors[0] = x < (MAX_X - 1) ? hexes[x + 1][y] : null;
-            neighbors[1] = y > 0 ? hexes[x][y - 1] : null;
-            neighbors[2] = x > 0 && y > 0 ? hexes[x - 1][y - 1] : null;
-            neighbors[3] = x > 0 ? hexes[x - 1][y] : null;
-            neighbors[4] = x > 0 && y < (MAX_Y - 1) ? hexes[x - 1][y + 1] : null;
-            neighbors[5] = y < (MAX_Y - 1) ? hexes[x][y + 1] : null;
-        } else {
-            neighbors[0] = x < (MAX_X - 1) ? hexes[x + 1][y] : null;
-            neighbors[1] = x < (MAX_X - 1) && y > 0 ? hexes[x + 1][y - 1] : null;
-            neighbors[2] = y > 0 ? hexes[x][y - 1] : null;
-            neighbors[3] = x > 0 ? hexes[x - 1][y] : null;
-            neighbors[4] = y < (MAX_Y - 1) ? hexes[x][y + 1] : null;
-            neighbors[5] = x < (MAX_X - 1) && y < (MAX_Y - 1) ? hexes[x + 1][y + 1] : null;
-        }
-        return neighbors;
     }
 
     public void modifyStartValues(int deltaX, int deltaY) {
@@ -241,7 +195,7 @@ public class GridHexagons extends JPanel {
         for (int x = 0; x < MAX_X; x++) {
             for (int y = 0; y < MAX_Y; y++) {
                 //colors[x][y] = getRandomColor();
-                Hex hex = new Hex(0L, x, y, getRandomTerrainType(), new HashSet<Unit>());
+                Hex hex = new Hex(0L, x, y, HexLibrary.getRandomTerrainType(), new HashSet<Unit>());
                 hexes[x][y] = hex;
                 //this.window.saveHexInDB(hex);
             }
@@ -296,14 +250,14 @@ public class GridHexagons extends JPanel {
                     }
                 }
 
-                g2d.setColor(getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()));
+                g2d.setColor(HexLibrary.getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()));
                 g2d.fillPolygon(hexagon);
                 g2d.setStroke(bs1);
                 g2d.setColor(Color.gray);
                 g2d.draw(hexagon);
 
                 if (hexes[x + startX][y + startY].getUnits().size() > 0) {
-                    imageUnit = getUnitImage(Color.BLUE, getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()), hexes[x + startX][y + startY].getUnits());
+                    imageUnit = getUnitImage(Color.BLUE, HexLibrary.getColorFromTerrain(hexes[x + startX][y + startY].getTerrainType()), hexes[x + startX][y + startY].getUnits());
                     g2d.translate(-1 * (Math.round(side / 7)), 0);
                     g2d.drawImage(imageUnit, (int) (hexagon.getBounds().x + side * 0.5), (int) (hexagon.getBounds().y + side * 0.5), this);
                     g2d.translate(Math.round(side / 7), 0);
@@ -318,44 +272,30 @@ public class GridHexagons extends JPanel {
             repaint();
         }
 
-        // TODO ajouter si isRightClicked --> dessin de la liste des voisins de hex
-
         if (isRightClick) {
             for (Hex h : neighbors) {
                 if (h != null) {
                     drawHex(g2d, Color.RED, h);
                 }
-
-                //repaint();
             }
         }
 
         if (isSelectedHexExists) {
             drawHex(g2d, Color.BLUE, selectedHex);
-            //repaint();
         }
 
         if (isFrangeExists) {
             treatedHexes.stream().forEach(h -> drawHex(g2d, Color.YELLOW, h));
             frangeHexes.stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
             drawHex(g2d, Color.RED, start);
-            //repaint();
         }
 
         if (isPathShow) {
             pathToShow.stream().forEach(h -> drawHex(g2d, Color.RED, h));
-            //System.out.println("path to show size : " + pathToShow.size());
-            //repaint();
         }
 
         if (isPathFoundShow) {
-            /*
-            foundPaths.stream()
-                    .sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null)
-                    .stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
-            */
             pathFoundToShow.stream().forEach(h -> drawHex(g2d, new Color(100, 0, 250), h));
-            //foundPaths.stream().findFirst().orElse(null).stream().forEach(h -> drawHex(g2d, Color.DARK_GRAY, h));
         }
 
         if(isBestPathShow) {
@@ -376,7 +316,6 @@ public class GridHexagons extends JPanel {
         g2d.setColor(strokeColor);
         g2d.setStroke(bs3);
         Polygon selectedPolygon;
-
         int x = h.getPosX() - startX;
         int y = h.getPosY() - startY;
         if (x >= 0 && y >= 0 && x < rangeX && y < rangeY) {
@@ -389,7 +328,6 @@ public class GridHexagons extends JPanel {
             g2d.setStroke(bs1);
             repaint();
         }
-
     }
 
     public Polygon getHexagon(final int x, final int y) {
@@ -410,10 +348,8 @@ public class GridHexagons extends JPanel {
         Graphics2D g2d = (Graphics2D) img.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-
         g2d.setPaint(bgColor);
         g2d.fillRect(0, 0, side, side);
-        //g2d.setColor(color1);
         g2d.setPaint(color1);
 
         g2d.fillRoundRect(0, 0, side, side, Math.round(side / 3), Math.round(side / 3)); //Math.round(side/7)
@@ -438,167 +374,7 @@ public class GridHexagons extends JPanel {
         }
         return img;
     }
-
-    private Color getColorFromTerrain(TerrainTypeEnum terrain) {
-        Color toReturn = Color.BLACK;
-        switch (terrain) {
-            case WATER:
-                toReturn = Color.CYAN;
-                break;
-            case GRASS:
-                toReturn = Color.GREEN;
-                break;
-            case SAND:
-                toReturn = Color.YELLOW;
-                break;
-            case HILL:
-                toReturn = Color.ORANGE;
-                break;
-        }
-        return toReturn;
-    }
-
-    private TerrainTypeEnum getRandomTerrainType() {
-        TerrainTypeEnum toReturn = TerrainTypeEnum.GRASS;
-        int random = (int) Math.floor(Math.random() * 9);
-        switch (random) {
-            case 0, 1, 2, 3, 4:
-                toReturn = TerrainTypeEnum.GRASS;
-                break;
-            case 5, 6:
-                toReturn = TerrainTypeEnum.HILL;
-                break;
-            case 7:
-                toReturn = TerrainTypeEnum.SAND;
-                break;
-            case 8:
-                toReturn = TerrainTypeEnum.WATER;
-                break;
-        }
-        return toReturn;
-    }
-
-    private float getTerrainWeight(TerrainTypeEnum terrainType) {
-        float toReturn = 1F;
-        switch (terrainType) {
-            case WATER -> {
-                toReturn = Float.MAX_VALUE;
-            }
-            case GRASS -> {
-                toReturn = 1F;
-            }
-            case SAND -> {
-                toReturn = 1.5F;
-            }
-            case HILL -> {
-                toReturn = 3F;
-            }
-        }
-        return toReturn;
-    }
-
-    // si frange pas créée (booleen) et isSelectedHex
-
-    // alors init de la frange : ajout de selected hex dans treatedHexes , booleen a false
-    // sinon ajout de la frange dans treatedHexes
-    // ajout dans la frange des nouveaux hex voisins s'ils ne sont pas dans treatedHexes
-
-    /*
-    public void generateFrange() {
-        //System.out.println("appel generate");
-        isPathShow = false;
-        if (isSelectedHexExists) {
-            if (isFrangeExists) {
-                //System.out.println("la frange existe");
-                treatedHexes.addAll(frangeHexes);
-
-            } else {
-                start = selectedHex;
-                isFrangeExists = true;
-                //System.out.println("la frange n'existe pas");
-                Set<Hex> initPath = new HashSet<>();
-                initPath.add(selectedHex);
-                HexFrange initHex = new HexFrange(selectedHex, initPath);
-                treatedHexes.add(initHex);
-                frangeHexes.add(initHex);
-            }
-            Set<HexFrange> tempFrange = new HashSet<HexFrange>();
-            frangeHexes.stream().forEach(h -> {
-                Hex[] neighbors = calculateNeighbors(h);
-                Arrays.stream(neighbors).filter(n -> n != null).filter(n -> !isSetContainsHex(treatedHexes, n)).forEach(n -> {
-                    Set<Hex> pathFrange = new HashSet<>(h.getPath());
-                    pathFrange.add(n);
-                    HexFrange hexFrange = new HexFrange(n, pathFrange);
-                    if (isSetContainsHexFrange(tempFrange, hexFrange)) {
-                        // récupérer chemin de hex deja dans le set
-                        HexFrange oldHexF = tempFrange.stream().filter(hex -> hex.getPosX() == hexFrange.getPosX() && hex.getPosY() == hexFrange.getPosY()).findFirst().orElse(null);
-
-                        Set<Hex> oldPath = oldHexF.getPath();
-                        float oldPathWeight = calculatePathWeight(oldPath, selectedHex);
-                        //System.out.println("old hex weight : " + oldWeight);
-                        // comparer les chemin par appel méthode calculatePathWeight(Set<Hex> path, )
-                        float newPathWeight = calculatePathWeight(hexFrange.getPath(), selectedHex);
-                        //System.out.println("new hex weight : " + newWeight);
-                        if (newPathWeight < oldPathWeight) {
-                            tempFrange.remove(oldHexF);
-                            tempFrange.add(hexFrange);
-                        }
-                    } else {
-                        if (isTerrainPassable(n)) {
-                            tempFrange.add(hexFrange);
-                        } else {
-                            treatedHexes.add(hexFrange);
-                        }
-                    }
-
-
-                });
-            });
-            frangeHexes = tempFrange;
-        }
-    }
-*/
-    private float calculatePathWeight(Set<Hex> path, Hex startHex) {
-        float toReturn = path.stream().map(h -> getTerrainWeight(h.getTerrainType())).reduce(0F, (s, w) -> s + w);
-        toReturn -= getTerrainWeight(startHex.getTerrainType());
-        return toReturn;
-    }
-
-    private boolean isSetContainsHexFrange(Set<HexFrange> set, HexFrange hexFrange) {
-        return set.stream().anyMatch(hf -> hf.getPosX() == hexFrange.getPosX() && hf.getPosY() == hexFrange.getPosY());
-        //return false;
-    }
-
-    private boolean isTerrainPassable(Hex h) {
-        return h.getTerrainType() != TerrainTypeEnum.WATER;
-    }
-
-    private boolean isSetContainsHex(Set<HexFrange> set, Hex hex) {
-        return set.stream().anyMatch(hf -> hf.getPosX() == hex.getPosX() && hf.getPosY() == hex.getPosY());
-    }
-
-    /*
-    public void displayPaths() {
-        isPathShow = true;
-        pathId++;
-        if (pathId > frangeHexes.size()) {
-            pathId = 1;
-        }
-        if (isFrangeExists) {
-            int cpt = 0;
-            //frangeHexes
-            for (HexFrange fh : frangeHexes) {
-                cpt++;
-                if (cpt == pathId) {
-                    pathToShow = fh.getPath();
-                }
-            }
-
-        }
-    }*/
-
     public void displayFoundPaths(Window win) {
-
         isPathFoundShow = true;
         isBestPathShow = false;
         pathFoundId++;
@@ -610,20 +386,17 @@ public class GridHexagons extends JPanel {
             cpt++;
             if (cpt == pathFoundId) {
                 pathFoundToShow = path;
-                win.displayInfosPaths1("poids : " + calculatePathWeight(pathFoundToShow, startPF));
+                win.displayInfosPaths1("poids : " + HexLibrary.calculatePathWeight(pathFoundToShow, startPF));
             }
-
         }
-
         //pathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null);
-
     }
 
     public void displayBestPath(Window win) {
         isBestPathShow = !isBestPathShow;
         isPathFoundShow = !isPathFoundShow;
-        bestPathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).findFirst().orElse(null);
-        win.displayInfosPaths2("poids : " + calculatePathWeight(bestPathFoundToShow, startPF));
+        bestPathFoundToShow = foundPaths.stream().sorted(Comparator.comparing(p -> HexLibrary.calculatePathWeight(p,startPF))).findFirst().orElse(null);
+        win.displayInfosPaths2("poids : " + HexLibrary.calculatePathWeight(bestPathFoundToShow, startPF));
     }
 
     public void setStartHex() {
@@ -640,7 +413,7 @@ public class GridHexagons extends JPanel {
 
     public void searchPaths(Window win) {
         win.disableButton3();
-        System.out.println("Appel méthode générateur de chemin");
+        System.out.println("Appel méthode générateur de chemin(s)");
         PathFinder pf = new PathFinder();
         foundPaths = pf.generatePaths(hexes, MAX_X, MAX_Y, startPF, endPF);
         Set<Set<Hex>> reverseFoundPaths = new HashSet<>();
@@ -656,13 +429,11 @@ public class GridHexagons extends JPanel {
         // .stream().sorted(Comparator.comparing(p -> calculatePathWeight(p,startPF))).collect(Collectors.toSet())
         isPathFound = foundPaths != null;
         if (isPathFound) {
-            System.out.println("nombre de chemin retenus : " + foundPaths.size());
+            System.out.println("nombre de chemin(s) retenu(s) : " + foundPaths.size());
             win.enableButton4();
             win.enableButton5();
         }
         else {
-            //showMessageDialog(null, "Pas de chemin(s) possible(s)");
-
             showMessageDialog(this, "Pas de chemin(s) possible(s)", "Pas de Résultat", JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -684,14 +455,5 @@ public class GridHexagons extends JPanel {
         win.enableButton3();
         win.resetDatas();
     }
-
-    public boolean isSelectedHexPassable() {
-        if (isSelectedHexExists) {
-            return isTerrainPassable(selectedHex);
-        } else {
-            return false;
-        }
-    }
-
 
 }
